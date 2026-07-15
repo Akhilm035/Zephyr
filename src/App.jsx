@@ -176,7 +176,7 @@ function App() {
       <header className="app-header">
         <div className="header-container">
           <div className="brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} id="logo-brand">
-            <span className="brand-name">Akkuz Zephyr</span>
+            <span className="brand-name">Zephyr</span>
           </div>
 
           <button
