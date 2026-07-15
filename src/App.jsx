@@ -9,11 +9,8 @@ import {
   Menu,
   X,
   Star,
-  Check,
   CheckCircle,
-  Volume2,
-  Lock,
-  ArrowRight
+  Droplet
 } from 'lucide-react'
 
 // Toast Component
@@ -92,12 +89,18 @@ const CATEGORIES = [
 ]
 
 function App() {
-  const [activeScenario, setActiveScenario] = useState(SCENARIOS[0])
+  const [activeScenario, setActiveScenario] = useState({
+    id: 'storm',
+    title: 'Midnight Storm',
+    label: 'Scenario',
+    image: '/ancient_forest.png',
+    ambientSoundName: 'Heavy Rain',
+    defaultVolume: 65
+  })
   const [isPlaying, setIsPlaying] = useState(false)
   const [rainVolume, setRainVolume] = useState(65)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
-  const [isTimerActive, setIsTimerActive] = useState(false)
   const [timeLeft, setTimeLeft] = useState(2700) // 45 minutes in seconds
 
   const timerRef = useRef(null)
@@ -129,11 +132,6 @@ function App() {
     }
   }, [isPlaying])
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
 
   const showToast = (message) => {
     setToastMessage(message)
@@ -192,7 +190,7 @@ function App() {
           <nav className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
             <button className="nav-link" onClick={() => handleNavClick('features')}>Features</button>
             <button className="nav-link" onClick={() => handleNavClick('scenarios')}>How It Works</button>
-            <button className="nav-link" onClick={() => handleNavClick('pricing')}>Pricing</button>
+            <button className="nav-link" onClick={() => handleNavClick('testimonials')}>Testimonials</button>
             <button className="btn btn-primary" onClick={() => showToast("Registration is coming soon!")}>
               Get Started
             </button>
@@ -214,11 +212,13 @@ function App() {
               </button>
             </div>
 
-            <div className="hero-panels">
+             <div className="hero-panels">
               {/* Active Layer Control Panel */}
-              <div className="panel-card glass-panel">
+              <div className="panel-card glass-panel layer-panel">
                 <div className="layer-header">
-                  <Volume2 className="layer-icon" size={20} />
+                  <div className="layer-icon-container">
+                    <Droplet className="layer-icon" size={18} />
+                  </div>
                   <div className="layer-meta">
                     <span className="layer-label">Layer Active</span>
                     <span className="layer-title">{activeScenario.ambientSoundName}</span>
@@ -234,9 +234,6 @@ function App() {
                     className="slider-bar"
                     aria-label="Rain volume control"
                   />
-                  <span style={{ fontSize: '0.8rem', minWidth: '2.5rem', textAlign: 'right', marginLeft: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                    {rainVolume}%
-                  </span>
                 </div>
               </div>
 
@@ -258,20 +255,18 @@ function App() {
               {/* Sleep Timer Control Panel */}
               <div className="panel-card glass-panel timer-panel">
                 <div className="timer-details">
-                  <div className="timer-icon-container">
-                    <Clock size={20} />
-                  </div>
-                  <div className="timer-info">
+                  <div className="timer-header-row">
+                    <Clock size={16} className="timer-icon" />
                     <span className="timer-label">Sleep Timer</span>
-                    <span className="timer-value">{formatTime(timeLeft)} remaining</span>
                   </div>
+                  <span className="timer-value">{Math.ceil(timeLeft / 60)} mins</span>
                 </div>
                 <button
                   className={`timer-play-btn ${isPlaying ? 'playing' : ''}`}
                   onClick={togglePlayback}
                   aria-label={isPlaying ? 'Pause soundscape' : 'Play soundscape'}
                 >
-                  {isPlaying ? <Pause size={14} /> : <Play size={14} style={{ marginLeft: '1px' }} />}
+                  {isPlaying ? <Pause size={12} /> : <Play size={12} style={{ marginLeft: '1px' }} />}
                 </button>
               </div>
             </div>
@@ -321,7 +316,7 @@ function App() {
 
         {/* Immersive Environments Scenario Selector */}
         <section className="section" id="scenarios">
-          <div className="section-header">
+          <div className="section-header scenarios-header">
             <h2 className="section-title">Immersive Environments</h2>
             <p className="section-subtitle">
               Step into meticulously recorded worlds, from the heart of the Amazon to the peak of the Himalayas.
@@ -344,8 +339,8 @@ function App() {
           </div>
         </section>
 
-        {/* Testimonials and Premium Pass Card */}
-        <section className="section" id="pricing">
+        {/* Testimonial Section */}
+        <section className="section" id="testimonials">
           <div className="combo-container">
             <div className="testimonial-part">
               <div className="stars-rating">
@@ -365,30 +360,6 @@ function App() {
                   <span className="author-title">Mindfulness Coach</span>
                 </div>
               </div>
-            </div>
-
-            <div className="premium-part">
-              <span className="premium-label">Premium Pass</span>
-              <div className="premium-price">
-                $4.99<span>/mo</span>
-              </div>
-              <ul className="premium-list">
-                <li className="premium-item">
-                  <Check className="check-icon" size={16} />
-                  All 50+ Global Locations
-                </li>
-                <li className="premium-item">
-                  <Check className="check-icon" size={16} />
-                  Unlimited Offline Downloads
-                </li>
-                <li className="premium-item">
-                  <Check className="check-icon" size={16} />
-                  Dynamic Day/Night Cycles
-                </li>
-              </ul>
-              <button className="btn btn-primary premium-btn" onClick={() => showToast('Premium activation coming soon!')}>
-                Go Premium
-              </button>
             </div>
           </div>
         </section>

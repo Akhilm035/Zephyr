@@ -225,7 +225,8 @@ body {
 .hero-content {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
 }
 
 .hero-title {
@@ -235,14 +236,16 @@ body {
   letter-spacing: -0.04em;
   margin-bottom: 1.5rem;
   color: var(--text-primary);
+  text-align: center;
 }
 
 .hero-description {
   font-size: 1.2rem;
   color: var(--text-secondary);
   max-width: 580px;
-  margin-bottom: 2.5rem;
+  margin: 0 auto 2.5rem;
   line-height: 1.6;
+  text-align: center;
 }
 
 /* Interactive Floating Panels on Hero */
@@ -250,6 +253,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  align-items: flex-end;
+  position: relative;
+  width: 100%;
 }
 
 .panel-card {
@@ -257,6 +263,23 @@ body {
 }
 
 /* Active Layer Slider */
+.layer-panel {
+  width: 280px;
+  margin-right: -2rem;
+}
+
+.layer-icon-container {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
 .layer-header {
   display: flex;
   align-items: center;
@@ -265,7 +288,7 @@ body {
 }
 
 .layer-icon {
-  color: var(--primary);
+  color: var(--text-primary);
 }
 
 .layer-meta {
@@ -274,10 +297,11 @@ body {
 }
 
 .layer-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .layer-title {
@@ -289,6 +313,7 @@ body {
 .slider-container {
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .slider-bar {
@@ -322,8 +347,12 @@ body {
 /* Now Playing Panel */
 .playing-panel {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 1.25rem;
+  width: 320px;
+  margin-right: 1.5rem;
 }
 
 .playing-info {
@@ -333,10 +362,11 @@ body {
 }
 
 .playing-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .playing-title {
@@ -381,35 +411,37 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 250px;
+  margin-right: 6.5rem;
 }
 
 .timer-details {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.timer-icon-container {
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.timer-info {
-  display: flex;
   flex-direction: column;
+  gap: 0.4rem;
+}
+
+.timer-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.timer-icon {
+  color: var(--text-secondary);
 }
 
 .timer-label {
   font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .timer-value {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .timer-play-btn {
@@ -509,6 +541,12 @@ body {
 }
 
 /* Immersive Environments Section */
+.scenarios-header {
+  text-align: left;
+  max-width: 800px;
+  margin: 0 0 4rem 0 !important;
+}
+
 .scenarios-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -518,7 +556,7 @@ body {
 .scenario-card {
   position: relative;
   height: 480px;
-  border-radius: var(--radius-lg);
+  border-radius: 32px;
   overflow: hidden;
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -568,11 +606,11 @@ body {
   box-shadow: 0 0 20px var(--primary-glow);
 }
 
-/* Testimonial & Premium Combo Card */
+/* Testimonial Section Styling */
 .combo-container {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-radius: var(--radius-xl);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -583,11 +621,13 @@ body {
 }
 
 .testimonial-part {
-  padding: 4.5rem;
+  padding: 5rem 3rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   justify-content: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  width: 100%;
 }
 
 .stars-rating {
@@ -598,10 +638,11 @@ body {
 }
 
 .testimonial-text {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-style: italic;
   font-weight: 500;
   line-height: 1.6;
+  max-width: 800px;
   margin-bottom: 2rem;
   color: var(--text-primary);
 }
@@ -623,6 +664,7 @@ body {
 .author-info {
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .author-name {
@@ -633,61 +675,6 @@ body {
 .author-title {
   font-size: 0.85rem;
   color: var(--text-secondary);
-}
-
-.premium-part {
-  padding: 4.5rem;
-  background: rgba(144, 137, 252, 0.02);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.premium-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--primary);
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.premium-price {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
-}
-
-.premium-price span {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.premium-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  margin-bottom: 2.25rem;
-}
-
-.premium-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-}
-
-.check-icon {
-  color: var(--primary);
-  flex-shrink: 0;
-}
-
-.premium-btn {
-  width: 100%;
 }
 
 /* Use Cases / Categories Bento Grid */
