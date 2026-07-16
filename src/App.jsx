@@ -33,6 +33,385 @@ import {
   Music
 } from 'lucide-react'
 
+// Web Audio Synth Engine
+class AmbientSynthEngine {
+  constructor() {
+    this.ctx = null;
+    this.sources = {}; // active nodes
+    this.gains = {};   // volume control nodes
+    this.thunderTimeout = null;
+    this.fireTimeout = null;
+    this.birdsTimeout = null;
+    this.musicTimeout = null;
+  }
+
+  init() {
+    if (this.ctx) return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    this.ctx = new AudioContextClass();
+  }
+
+  setVolume(soundId, volume) {
+    if (!this.ctx) return;
+    const gainNode = this.gains[soundId];
+    if (gainNode) {
+      // Linear volume mapping 0-100 to 0.0-1.0
+      gainNode.gain.setValueAtTime(volume / 100, this.ctx.currentTime);
+    }
+  }
+
+  start(soundId, volume) {
+    this.init();
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+
+    if (this.sources[soundId]) return; // already playing
+
+    // Create Gain Node
+    const gainNode = this.ctx.createGain();
+    gainNode.gain.setValueAtTime(volume / 100, this.ctx.currentTime);
+    gainNode.connect(this.ctx.destination);
+    this.gains[soundId] = gainNode;
+
+    const sourceNodes = [];
+
+    // Synthesize based on soundId
+    if (soundId === 'rain') {
+      // White noise buffer
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      
+      const whiteNoise = this.ctx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      // Filter to shape the rain sound
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1000;
+      filter.Q.value = 1;
+
+      whiteNoise.connect(filter);
+      filter.connect(gainNode);
+      whiteNoise.start();
+
+      sourceNodes.push(whiteNoise);
+    }
+    else if (soundId === 'wind') {
+      // White noise filter sweeps
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const whiteNoise = this.ctx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 400;
+
+      // Slow LFO to sweep filter frequency for wind gusts
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.15; // 0.15 Hz
+      
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 150;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+
+      whiteNoise.connect(filter);
+      filter.connect(gainNode);
+      
+      lfo.start();
+      whiteNoise.start();
+
+      sourceNodes.push(whiteNoise, lfo);
+    }
+    else if (soundId === 'thunder') {
+      // Thunder rumbler trigger loop
+      const triggerThunder = () => {
+        if (!this.gains[soundId]) return; // stopped
+        
+        // Low frequency noise sweep
+        const bufferSize = 3 * this.ctx.sampleRate;
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = noiseBuffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(80, this.ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 2.5);
+
+        const thunderGain = this.ctx.createGain();
+        thunderGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        thunderGain.gain.linearRampToValueAtTime(1.0, this.ctx.currentTime + 0.1);
+        thunderGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 2.8);
+
+        noise.connect(filter);
+        filter.connect(thunderGain);
+        thunderGain.connect(gainNode);
+
+        noise.start();
+        
+        // Schedule next thunder in 12-25 seconds
+        const nextTime = 12000 + Math.random() * 13000;
+        this.thunderTimeout = setTimeout(triggerThunder, nextTime);
+      };
+      
+      triggerThunder();
+    }
+    else if (soundId === 'fire') {
+      // Campfire: low rumble noise + crackle pop clicks
+      // Rumble
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      
+      const rumbleNoise = this.ctx.createBufferSource();
+      rumbleNoise.buffer = noiseBuffer;
+      rumbleNoise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 180;
+      filter.Q.value = 1.5;
+
+      rumbleNoise.connect(filter);
+      filter.connect(gainNode);
+      rumbleNoise.start();
+      sourceNodes.push(rumbleNoise);
+
+      // Crackles
+      const crackleTrigger = () => {
+        if (!this.gains[soundId]) return;
+        
+        const osc = this.ctx.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(800 + Math.random() * 1500, this.ctx.currentTime);
+        
+        const crackleGain = this.ctx.createGain();
+        crackleGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        crackleGain.gain.linearRampToValueAtTime(0.3, this.ctx.currentTime + 0.002);
+        crackleGain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.015);
+
+        osc.connect(crackleGain);
+        crackleGain.connect(gainNode);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.02);
+
+        const nextCrackle = 50 + Math.random() * 350;
+        this.fireTimeout = setTimeout(crackleTrigger, nextCrackle);
+      };
+
+      crackleTrigger();
+    }
+    else if (soundId === 'ocean') {
+      // Slow swell filter sweep
+      const bufferSize = 4 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 250;
+
+      // 0.08 Hz slow swell LFO
+      const swellLFO = this.ctx.createOscillator();
+      swellLFO.frequency.value = 0.08;
+      
+      const swellGain = this.ctx.createGain();
+      swellGain.gain.value = 180;
+
+      swellLFO.connect(swellGain);
+      swellGain.connect(filter.frequency);
+
+      noise.connect(filter);
+      filter.connect(gainNode);
+      
+      swellLFO.start();
+      noise.start();
+
+      sourceNodes.push(noise, swellLFO);
+    }
+    else if (soundId === 'birds') {
+      // Birds chirping loop
+      const triggerChirp = () => {
+        if (!this.gains[soundId]) return;
+        
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        
+        const baseFreq = 2200 + Math.random() * 800;
+        osc.frequency.setValueAtTime(baseFreq, now);
+        // Bird tweet pitch envelope
+        osc.frequency.exponentialRampToValueAtTime(baseFreq + 1000, now + 0.05);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq - 500, now + 0.15);
+
+        const chirpGain = this.ctx.createGain();
+        chirpGain.gain.setValueAtTime(0, now);
+        chirpGain.gain.linearRampToValueAtTime(0.15, now + 0.02);
+        chirpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        osc.connect(chirpGain);
+        chirpGain.connect(gainNode);
+
+        osc.start();
+        osc.stop(now + 0.2);
+
+        // Schedule next chirp
+        const nextTime = 3000 + Math.random() * 5000;
+        this.birdsTimeout = setTimeout(triggerChirp, nextTime);
+      };
+
+      triggerChirp();
+    }
+    else if (soundId === 'snow') {
+      // Blizzard wind gusts (Higher pitch noise bandpass)
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1600;
+      filter.Q.value = 0.5;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.25;
+
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 400;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+
+      noise.connect(filter);
+      filter.connect(gainNode);
+
+      lfo.start();
+      noise.start();
+
+      sourceNodes.push(noise, lfo);
+    }
+    else if (soundId === 'music') {
+      // Soothing warm chord progression synthesis
+      const chords = [
+        [261.63, 329.63, 392.00, 493.88], // Cmaj7 (C4, E4, G4, B4)
+        [220.00, 261.63, 329.63, 392.00], // Am7 (A3, C4, E4, G4)
+        [174.61, 220.00, 261.63, 349.23], // Fmaj7 (F3, A3, C4, F4)
+        [196.00, 246.94, 293.66, 392.00]  // G6 (G3, B3, D4, G4)
+      ];
+
+      let chordIndex = 0;
+
+      const playChord = () => {
+        if (!this.gains[soundId]) return;
+        
+        const now = this.ctx.currentTime;
+        const currentChord = chords[chordIndex];
+        const chordGain = this.ctx.createGain();
+        chordGain.gain.setValueAtTime(0, now);
+        chordGain.gain.linearRampToValueAtTime(0.12, now + 2.0); // 2 sec attack
+        chordGain.gain.setValueAtTime(0.12, now + 6.0);
+        chordGain.gain.exponentialRampToValueAtTime(0.001, now + 9.8); // release
+
+        chordGain.connect(gainNode);
+
+        currentChord.forEach((freq) => {
+          const osc = this.ctx.createOscillator();
+          osc.type = 'triangle'; // warm woodwind sound
+          osc.frequency.setValueAtTime(freq, now);
+
+          // Add a subtle detuned second oscillator for chorus effect
+          const detune = this.ctx.createOscillator();
+          detune.type = 'sine';
+          detune.frequency.setValueAtTime(freq + Math.random() * 0.5, now);
+          
+          osc.connect(chordGain);
+          detune.connect(chordGain);
+          
+          osc.start();
+          detune.start();
+          osc.stop(now + 10.0);
+          detune.stop(now + 10.0);
+        });
+
+        chordIndex = (chordIndex + 1) % chords.length;
+
+        // Schedule next chord in 10 seconds
+        this.musicTimeout = setTimeout(playChord, 10000);
+      };
+
+      playChord();
+    }
+
+    this.sources[soundId] = sourceNodes;
+  }
+
+  stop(soundId) {
+    if (soundId === 'thunder') clearTimeout(this.thunderTimeout);
+    if (soundId === 'fire') clearTimeout(this.fireTimeout);
+    if (soundId === 'birds') clearTimeout(this.birdsTimeout);
+    if (soundId === 'music') clearTimeout(this.musicTimeout);
+
+    const sourceNodes = this.sources[soundId];
+    if (sourceNodes) {
+      sourceNodes.forEach((node) => {
+        try {
+          node.stop();
+        } catch (e) {
+          // already stopped
+        }
+      });
+      delete this.sources[soundId];
+    }
+
+    const gainNode = this.gains[soundId];
+    if (gainNode) {
+      gainNode.disconnect();
+      delete this.gains[soundId];
+    }
+  }
+
+  stopAll() {
+    Object.keys(this.sources).forEach((id) => this.stop(id));
+  }
+}
+
 // Toast Component
 function Toast({ message, onClose }) {
   useEffect(() => {
@@ -230,7 +609,7 @@ function App() {
   const [tiltStyle, setTiltStyle] = useState({})
 
   // Audio Playback Mock
-  const [isPlaying, setIsPlaying] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
 
   // Sound Mixer States
   const [activeSounds, setActiveSounds] = useState(['rain', 'wind', 'music'])
@@ -251,6 +630,41 @@ function App() {
   // Sleep Timer Countdown inside App Preview
   const [timeLeft, setTimeLeft] = useState(2700) // 45 minutes
   const timerRef = useRef(null)
+
+  const synthRef = useRef(null)
+
+  // Synchronous web audio system state alignment (bypasses browser autoplay restrictions)
+  const syncSynthEngine = (playing, active, volumes) => {
+    if (!synthRef.current) return
+    if (playing) {
+      synthRef.current.init()
+      if (synthRef.current.ctx && synthRef.current.ctx.state === 'suspended') {
+        synthRef.current.ctx.resume().catch((err) => console.log('AudioContext resume failed:', err))
+      }
+      active.forEach((soundId) => {
+        const vol = volumes[soundId] || 0
+        synthRef.current.start(soundId, vol)
+        synthRef.current.setVolume(soundId, vol)
+      })
+      MIX_SOUNDS.forEach((snd) => {
+        if (!active.includes(snd.id)) {
+          synthRef.current.stop(snd.id)
+        }
+      })
+    } else {
+      synthRef.current.stopAll()
+    }
+  }
+
+  // Instantiate the Synth Engine
+  useEffect(() => {
+    synthRef.current = new AmbientSynthEngine()
+    return () => {
+      if (synthRef.current) {
+        synthRef.current.stopAll()
+      }
+    }
+  }, [])
 
   // Listen to Scroll position for Day-to-Night gradient
   useEffect(() => {
@@ -287,6 +701,9 @@ function App() {
           if (prev <= 1) {
             clearInterval(timerRef.current)
             setIsPlaying(false)
+            if (synthRef.current) {
+              synthRef.current.stopAll()
+            }
             showToast('Sleep timer finished. Audio paused.')
             return 2700
           }
@@ -328,21 +745,43 @@ function App() {
 
   // Toggle active sound in mixer
   const toggleSound = (soundId) => {
-    if (activeSounds.includes(soundId)) {
-      setActiveSounds(activeSounds.filter((id) => id !== soundId))
+    let nextActive = [...activeSounds]
+    const isActive = nextActive.includes(soundId)
+    if (isActive) {
+      nextActive = nextActive.filter((id) => id !== soundId)
       showToast(`Removed sound: ${soundId.toUpperCase()}`)
     } else {
-      setActiveSounds([...activeSounds, soundId])
+      nextActive.push(soundId)
       showToast(`Added sound: ${soundId.toUpperCase()}`)
     }
+    setActiveSounds(nextActive)
+    syncSynthEngine(isPlaying, nextActive, soundVolumes)
   }
 
   // Change volume
   const handleVolumeChange = (soundId, value) => {
-    setSoundVolumes((prev) => ({
-      ...prev,
-      [soundId]: value
-    }))
+    setSoundVolumes((prev) => {
+      const nextVolumes = { ...prev, [soundId]: value }
+      let nextActive = [...activeSounds]
+      if (value > 0 && !nextActive.includes(soundId)) {
+        nextActive.push(soundId)
+      } else if (value === 0 && nextActive.includes(soundId)) {
+        nextActive = nextActive.filter((id) => id !== soundId)
+      }
+      setActiveSounds(nextActive)
+      syncSynthEngine(isPlaying, nextActive, nextVolumes)
+      return nextVolumes
+    })
+  }
+
+  // Toggle global play/pause state with toast alerts
+  const togglePlayback = () => {
+    setIsPlaying((prev) => {
+      const nextState = !prev
+      showToast(nextState ? 'Ambient Audio playing. Close your eyes and enjoy.' : 'Ambient Audio paused.')
+      syncSynthEngine(nextState, activeSounds, soundVolumes)
+      return nextState
+    })
   }
 
   // Apply Preset
@@ -350,10 +789,11 @@ function App() {
     setActivePreset(preset.id)
     const active = Object.keys(preset.sounds)
     setActiveSounds(active)
-    setSoundVolumes((prev) => ({
-      ...prev,
-      ...preset.sounds
-    }))
+    setSoundVolumes((prev) => {
+      const nextVolumes = { ...prev, ...preset.sounds }
+      syncSynthEngine(isPlaying, active, nextVolumes)
+      return nextVolumes
+    })
     showToast(`Preset loaded: ${preset.name}`)
   }
 
@@ -363,10 +803,11 @@ function App() {
     const dest = DESTINATIONS[index]
     const activeKeys = Object.keys(dest.volPreset)
     setActiveSounds(activeKeys)
-    setSoundVolumes((prev) => ({
-      ...prev,
-      ...dest.volPreset
-    }))
+    setSoundVolumes((prev) => {
+      const nextVolumes = { ...prev, ...dest.volPreset }
+      syncSynthEngine(isPlaying, activeKeys, nextVolumes)
+      return nextVolumes
+    })
     showToast(`Exploring destination: ${dest.title}`)
     const mixerEl = document.getElementById('sound-mixer')
     if (mixerEl) {
@@ -565,26 +1006,35 @@ function App() {
 
                         {/* Interactive sliders list in app */}
                         <div className="phone-ui-sound-sliders">
-                          {activeSounds.slice(0, 3).map((soundId) => {
-                            const snd = MIX_SOUNDS.find((s) => s.id === soundId)
-                            return (
-                              <div key={soundId} className="phone-ui-slider-row">
-                                <span className="phone-ui-slider-label">{snd ? snd.name : soundId}</span>
-                                <div className="phone-ui-slider-track">
-                                  <div
-                                    className="phone-ui-slider-fill"
-                                    style={{ width: `${soundVolumes[soundId] || 50}%` }}
-                                  />
-                                </div>
+                          {[
+                            { id: 'rain', name: 'Rainfall' },
+                            { id: 'wind', name: 'Wind' },
+                            { id: 'music', name: 'Ambient Music' }
+                          ].map((sound) => (
+                            <div key={sound.id} className="phone-ui-slider-row">
+                              <span className="phone-ui-slider-label">{sound.name}</span>
+                              <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="100"
+                                  value={soundVolumes[sound.id] || 0}
+                                  onChange={(e) => handleVolumeChange(sound.id, Number(e.target.value))}
+                                  className="phone-ui-slider-input"
+                                  style={{
+                                    background: `linear-gradient(to right, var(--c-lavender-bright) 0%, var(--c-lavender-bright) ${soundVolumes[sound.id] || 0}%, rgba(255,255,255,0.1) ${soundVolumes[sound.id] || 0}%, rgba(255,255,255,0.1) 100%)`
+                                  }}
+                                  aria-label={`Adjust volume of ${sound.name} inside phone mockup`}
+                                />
                               </div>
-                            )
-                          })}
+                            </div>
+                          ))}
                         </div>
 
                         <div className="phone-ui-playback-bar">
                           <button
                             className="phone-play-btn"
-                            onClick={() => setIsPlaying(!isPlaying)}
+                            onClick={togglePlayback}
                             aria-label={isPlaying ? 'Pause mix' : 'Play mix'}
                           >
                             {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" style={{ marginLeft: '2px' }} />}
@@ -755,7 +1205,7 @@ function App() {
                 {/* Playing status toggle */}
                 <button
                   className="btn btn-secondary"
-                  onClick={() => setIsPlaying(!isPlaying)}
+                  onClick={togglePlayback}
                   style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem' }}
                 >
                   {isPlaying ? <Pause size={14} /> : <Play size={14} />}

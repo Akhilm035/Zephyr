@@ -773,17 +773,30 @@ body {
   width: 45px;
   color: var(--c-text-secondary);
 }
-.phone-ui-slider-track {
-  flex: 1;
+.phone-ui-slider-input {
+  -webkit-appearance: none;
+  width: 100%;
   height: 4px;
-  background: rgba(255,255,255,0.1);
   border-radius: 2px;
-  position: relative;
+  outline: none;
+  cursor: pointer;
+  transition: opacity .2s;
 }
-.phone-ui-slider-fill {
-  height: 100%;
+
+.phone-ui-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: var(--c-lavender-bright);
-  border-radius: 2px;
+  box-shadow: 0 0 6px var(--c-lavender-bright);
+  cursor: pointer;
+}
+
+.phone-ui-slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+  background: #ffffff;
 }
 
 .phone-ui-playback-bar {
@@ -814,6 +827,7 @@ body {
   width: 190px;
   transition: transform 0.1s ease-out;
   transform: translateZ(30px);
+  pointer-events: none;
 }
 
 .card-layer-1 {
