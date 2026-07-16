@@ -212,7 +212,7 @@ function App() {
               </button>
             </div>
 
-             <div className="hero-panels">
+            <div className="hero-panels">
               {/* Active Layer Control Panel */}
               <div className="panel-card glass-panel layer-panel">
                 <div className="layer-header">
