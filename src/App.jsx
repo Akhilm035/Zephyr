@@ -48,7 +48,7 @@ function Toast({ message, onClose }) {
   )
 }
 
-// Soundscapes (Explore Places) Data
+// Zephyrs (Explore Places) Data
 const DESTINATIONS = [
   {
     id: 'forest',
@@ -357,7 +357,7 @@ function App() {
     showToast(`Preset loaded: ${preset.name}`)
   }
 
-  // Apply a destination soundscape preset
+  // Apply a destination zephyr preset
   const selectDestination = (index) => {
     setActiveDestination(index)
     const dest = DESTINATIONS[index]
@@ -403,7 +403,7 @@ function App() {
     <>
       {/* Background System */}
       <div
-        className="soundscape-backdrop"
+        className="zephyr-backdrop"
         style={{
           '--theme-bg-1': themeBg1,
           '--theme-bg-2': themeBg2,
@@ -450,7 +450,7 @@ function App() {
         <div className="header-container">
           <a href="#" className="brand" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
             <div className="brand-icon">S</div>
-            <span className="brand-name">SoundScape</span>
+            <span className="brand-name">Zephyr</span>
           </a>
 
           <button
@@ -462,7 +462,7 @@ function App() {
           </button>
 
           <nav className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
-            <button className="nav-link" onClick={() => handleNavClick('why-love')}>Why SoundScape</button>
+            <button className="nav-link" onClick={() => handleNavClick('why-love')}>Why Zephyr</button>
             <button className="nav-link" onClick={() => handleNavClick('sound-mixer')}>Sound Mixer</button>
             <button className="nav-link" onClick={() => handleNavClick('destinations')}>Destinations</button>
             <button className="nav-link" onClick={() => handleNavClick('personalized')}>Scenarios</button>
@@ -504,7 +504,7 @@ function App() {
                 </button>
                 <button className="btn btn-secondary" onClick={() => handleNavClick('destinations')}>
                   <Compass size={18} />
-                  <span>Explore Soundscapes</span>
+                  <span>Explore Zephyrs</span>
                 </button>
               </div>
             </div>
@@ -533,7 +533,7 @@ function App() {
                       
                       <div className="phone-ui-header">
                         <Sliders size={18} className="phone-ui-title" />
-                        <span className="phone-ui-title">SoundScape</span>
+                        <span className="phone-ui-title">Zephyr</span>
                         <Clock size={18} className="phone-ui-title" />
                       </div>
 
@@ -865,7 +865,7 @@ function App() {
                   <span>Ambient Science</span>
                 </h4>
                 <p style={{ fontSize: '0.85rem', color: 'var(--c-text-secondary)', lineHeight: '1.6' }}>
-                  SoundScape utilizes brownian sound waves, calibrated frequencies, and dynamic environmental delays that mimic actual spatial sound horizons.
+                  Zephyr utilizes brownian sound waves, calibrated frequencies, and dynamic environmental delays that mimic actual spatial sound horizons.
                 </p>
               </div>
             </div>
@@ -1020,7 +1020,7 @@ function App() {
             <span className="section-tag">Premium Care</span>
             <h2 className="section-title">A luxurious sound space.</h2>
             <p className="section-desc">
-              Experience SoundScape Premium without any boundaries. Reclaim quiet spaces for relaxation and rest.
+              Experience Zephyr Premium without any boundaries. Reclaim quiet spaces for relaxation and rest.
             </p>
           </div>
 
@@ -1137,10 +1137,10 @@ function App() {
           
           <div className="download-container">
             <div className="download-content">
-              <span className="section-tag" style={{ color: 'var(--c-sunset)' }}>Get SoundScape</span>
+              <span className="section-tag" style={{ color: 'var(--c-sunset)' }}>Get Zephyr</span>
               <h2 className="download-title">Your peaceful escape is one tap away.</h2>
               <p className="download-desc">
-                Reclaim calm spaces, enhance focus, and drift into deep sleep. SoundScape is free to try with no registration required.
+                Reclaim calm spaces, enhance focus, and drift into deep sleep. Zephyr is free to try with no registration required.
               </p>
               
               <div className="download-badge-row">
@@ -1229,7 +1229,7 @@ function App() {
           <div className="footer-logo-row">
             <div className="brand" style={{ padding: 0 }}>
               <div className="brand-icon">S</div>
-              <span className="brand-name">SoundScape</span>
+              <span className="brand-name">Zephyr</span>
             </div>
             <span className="footer-tagline">Calm atmospheric worlds at your fingertips.</span>
           </div>
@@ -1239,13 +1239,13 @@ function App() {
               <span className="footer-link-header">Platform</span>
               <button className="footer-link-item" onClick={() => showToast('iOS App Store redirection link')}>iOS App</button>
               <button className="footer-link-item" onClick={() => showToast('Android Google Play store link')}>Android App</button>
-              <button className="footer-link-item" onClick={() => showToast('SoundScape Web Audio Beta coming soon!')}>Web Player</button>
+              <button className="footer-link-item" onClick={() => showToast('Zephyr Web Audio Beta coming soon!')}>Web Player</button>
             </div>
 
             <div className="footer-link-col">
               <span className="footer-link-header">Privacy & Terms</span>
-              <button className="footer-link-item" onClick={() => showToast('Privacy Policy (SoundScape)')}>Privacy Policy</button>
-              <button className="footer-link-item" onClick={() => showToast('Terms of Service (SoundScape)')}>Terms of Service</button>
+              <button className="footer-link-item" onClick={() => showToast('Privacy Policy (Zephyr)')}>Privacy Policy</button>
+              <button className="footer-link-item" onClick={() => showToast('Terms of Service (Zephyr)')}>Terms of Service</button>
               <button className="footer-link-item" onClick={() => showToast('General Data Protection Regulation details')}>GDPR Support</button>
             </div>
 
@@ -1269,7 +1269,7 @@ function App() {
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
                 </svg>
               </button>
-              <button className="social-icon-btn" onClick={() => showToast('Share SoundScape with friends')} aria-label="Share">
+              <button className="social-icon-btn" onClick={() => showToast('Share Zephyr with friends')} aria-label="Share">
                 <Share2 size={16} />
               </button>
             </div>
@@ -1277,7 +1277,7 @@ function App() {
           </div>
 
           <div className="footer-bottom-copy">
-            © 2026 SoundScape Ambient Systems. Designed with pure mindfulness. All Rights Reserved.
+            © 2026 Zephyr Ambient Systems. Designed with pure mindfulness. All Rights Reserved.
           </div>
         </div>
       </footer>

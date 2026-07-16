@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SoundScape Theme Design System & Stylesheet
+   Zephyr Theme Design System & Stylesheet
    ========================================================================== */
 
 /* Font & Core Reset */
@@ -95,7 +95,7 @@ body {
 /* ==========================================================================
    Premium Dynamic Background System
    ========================================================================== */
-.soundscape-backdrop {
+.zephyr-backdrop {
   position: fixed;
   inset: 0;
   z-index: -2;
