@@ -25,12 +25,14 @@ import {
   Calendar,
   Award,
   ChevronRight,
+  ChevronLeft,
   Shield,
   Layers,
   Sparkles,
   WifiOff,
   Snowflake,
-  Music
+  Music,
+  Bell
 } from 'lucide-react'
 
 // Web Audio Synth Engine
@@ -378,15 +380,325 @@ class AmbientSynthEngine {
 
       playChord();
     }
+    else if (soundId === 'dunes_wind') {
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const lowpass = this.ctx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 350;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.08;
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 100;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(lowpass.frequency);
+
+      noise.connect(lowpass);
+      lowpass.connect(gainNode);
+
+      lfo.start();
+      noise.start();
+      sourceNodes.push(noise, lfo);
+    }
+    else if (soundId === 'sand_drift') {
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const bandpass = this.ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.value = 2200;
+      bandpass.Q.value = 2.0;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.12;
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 600;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(bandpass.frequency);
+
+      noise.connect(bandpass);
+      bandpass.connect(gainNode);
+
+      lfo.start();
+      noise.start();
+      sourceNodes.push(noise, lfo);
+    }
+    else if (soundId === 'campfire') {
+      this.start('fire', volume);
+      return;
+    }
+    else if (soundId === 'tent_fabric') {
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 120;
+      filter.Q.value = 1.0;
+
+      const ampLFO = this.ctx.createOscillator();
+      ampLFO.frequency.value = 5.0;
+      const ampGain = this.ctx.createGain();
+      ampGain.gain.value = 0.3;
+
+      const nodGain = this.ctx.createGain();
+      nodGain.gain.setValueAtTime(0.7, this.ctx.currentTime);
+
+      ampLFO.connect(ampGain);
+      ampGain.connect(nodGain.gain);
+
+      noise.connect(filter);
+      filter.connect(nodGain);
+      nodGain.connect(gainNode);
+
+      ampLFO.start();
+      noise.start();
+      sourceNodes.push(noise, ampLFO);
+    }
+    else if (soundId === 'oud') {
+      const scale = [220.00, 233.08, 293.66, 311.13, 392.00, 415.30, 466.16, 523.25];
+      const playOud = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'triangle';
+        const freq = scale[Math.floor(Math.random() * scale.length)];
+        osc.frequency.setValueAtTime(freq, now);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(600, now);
+        filter.frequency.exponentialRampToValueAtTime(100, now + 0.4);
+
+        const noteGain = this.ctx.createGain();
+        noteGain.gain.setValueAtTime(0, now);
+        noteGain.gain.linearRampToValueAtTime(0.5, now + 0.01);
+        noteGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+        osc.connect(filter);
+        filter.connect(noteGain);
+        noteGain.connect(gainNode);
+
+        osc.start();
+        osc.stop(now + 0.9);
+
+        const nextTime = 600 + Math.random() * 1800;
+        this.oudTimeout = setTimeout(playOud, nextTime);
+      };
+      playOud();
+    }
+    else if (soundId === 'ney') {
+      const scale = [293.66, 329.63, 369.99, 392.00, 440.00];
+      let noteIndex = 0;
+      const playNey = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        const freq = scale[noteIndex];
+        osc.frequency.setValueAtTime(freq, now);
+
+        const bufferSize = 2 * this.ctx.sampleRate;
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 0.15;
+        }
+        const breath = this.ctx.createBufferSource();
+        breath.buffer = noiseBuffer;
+        
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(freq * 1.5, now);
+
+        const vib = this.ctx.createOscillator();
+        vib.frequency.value = 5.2;
+        const vibGain = this.ctx.createGain();
+        vibGain.gain.value = 1.8;
+
+        vib.connect(vibGain);
+        vibGain.connect(osc.frequency);
+
+        const neyGain = this.ctx.createGain();
+        neyGain.gain.setValueAtTime(0, now);
+        neyGain.gain.linearRampToValueAtTime(0.3, now + 1.0);
+        neyGain.gain.setValueAtTime(0.3, now + 4.5);
+        neyGain.gain.exponentialRampToValueAtTime(0.001, now + 6.0);
+
+        osc.connect(neyGain);
+        breath.connect(filter);
+        filter.connect(neyGain);
+        
+        neyGain.connect(gainNode);
+
+        osc.start();
+        breath.start();
+        vib.start();
+
+        osc.stop(now + 6.0);
+        breath.stop(now + 6.0);
+        vib.stop(now + 6.0);
+
+        noteIndex = (noteIndex + 1) % scale.length;
+        this.neyTimeout = setTimeout(playNey, 5500);
+      };
+      playNey();
+    }
+    else if (soundId === 'crickets') {
+      const playCrickets = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const chirpCount = 3 + Math.floor(Math.random() * 3);
+        const baseTime = now;
+        
+        for (let i = 0; i < chirpCount; i++) {
+          const startTime = baseTime + i * 0.08;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(4500 + Math.random() * 200, startTime);
+          
+          const chirpGain = this.ctx.createGain();
+          chirpGain.gain.setValueAtTime(0, startTime);
+          chirpGain.gain.linearRampToValueAtTime(0.12, startTime + 0.01);
+          chirpGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.04);
+          
+          osc.connect(chirpGain);
+          chirpGain.connect(gainNode);
+          osc.start(startTime);
+          osc.stop(startTime + 0.05);
+        }
+
+        const nextTime = 600 + Math.random() * 1200;
+        this.cricketsTimeout = setTimeout(playCrickets, nextTime);
+      };
+      playCrickets();
+    }
+    else if (soundId === 'night_ambient') {
+      const osc1 = this.ctx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.value = 65.41;
+
+      const osc2 = this.ctx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.value = 98.00;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 100;
+
+      const lowGain = this.ctx.createGain();
+      lowGain.gain.value = 0.5;
+
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(lowGain);
+      lowGain.connect(gainNode);
+
+      osc1.start();
+      osc2.start();
+      sourceNodes.push(osc1, osc2);
+    }
+    else if (soundId === 'camel_bells') {
+      const playBells = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200 + Math.random() * 300, now);
+
+        const modulator = this.ctx.createOscillator();
+        modulator.frequency.setValueAtTime(1800, now);
+        const modGain = this.ctx.createGain();
+        modGain.gain.setValueAtTime(300, now);
+
+        modulator.connect(modGain);
+        modGain.connect(osc.frequency);
+
+        const bellGain = this.ctx.createGain();
+        bellGain.gain.setValueAtTime(0, now);
+        bellGain.gain.linearRampToValueAtTime(0.2, now + 0.005);
+        bellGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+        osc.connect(bellGain);
+        bellGain.connect(gainNode);
+
+        modulator.start();
+        osc.start();
+        modulator.stop(now + 1.3);
+        osc.stop(now + 1.3);
+
+        const nextTime = 4000 + Math.random() * 6000;
+        this.camelBellsTimeout = setTimeout(playBells, nextTime);
+      };
+      playBells();
+    }
+    else if (soundId === 'falcon') {
+      const playFalcon = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1500, now);
+        osc.frequency.exponentialRampToValueAtTime(700, now + 0.35);
+
+        const cryGain = this.ctx.createGain();
+        cryGain.gain.setValueAtTime(0, now);
+        cryGain.gain.linearRampToValueAtTime(0.08, now + 0.02);
+        cryGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+        osc.connect(cryGain);
+        cryGain.connect(gainNode);
+
+        osc.start();
+        osc.stop(now + 0.45);
+
+        const nextTime = 25000 + Math.random() * 20000;
+        this.falconTimeout = setTimeout(playFalcon, nextTime);
+       };
+       this.falconTimeout = setTimeout(playFalcon, 8000 + Math.random() * 8000);
+    }
 
     this.sources[soundId] = sourceNodes;
   }
 
   stop(soundId) {
     if (soundId === 'thunder') clearTimeout(this.thunderTimeout);
-    if (soundId === 'fire') clearTimeout(this.fireTimeout);
+    if (soundId === 'fire' || soundId === 'campfire') {
+      clearTimeout(this.fireTimeout);
+      if (soundId === 'campfire') this.stop('fire');
+    }
     if (soundId === 'birds') clearTimeout(this.birdsTimeout);
     if (soundId === 'music') clearTimeout(this.musicTimeout);
+    if (soundId === 'oud') clearTimeout(this.oudTimeout);
+    if (soundId === 'ney') clearTimeout(this.neyTimeout);
+    if (soundId === 'crickets') clearTimeout(this.cricketsTimeout);
+    if (soundId === 'camel_bells') clearTimeout(this.camelBellsTimeout);
+    if (soundId === 'falcon') clearTimeout(this.falconTimeout);
 
     const sourceNodes = this.sources[soundId];
     if (sourceNodes) {
@@ -410,6 +722,220 @@ class AmbientSynthEngine {
   stopAll() {
     Object.keys(this.sources).forEach((id) => this.stop(id));
   }
+}
+
+// Mobile Immersive Hero View
+function MobileHeroView({
+  activeDestination,
+  DESTINATIONS,
+  isPlaying,
+  togglePlayback,
+  activeSounds,
+  toggleSound,
+  soundVolumes,
+  handleVolumeChange,
+  timeLeft
+}) {
+  const [localTime, setLocalTime] = useState('')
+  const [localDate, setLocalDate] = useState('')
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date()
+      const hours = String(now.getHours()).padStart(2, '0')
+      const minutes = String(now.getMinutes()).padStart(2, '0')
+      const month = now.toLocaleString('en-US', { month: 'short' }).toUpperCase()
+      const day = now.getDate()
+      
+      setLocalTime(`${hours}:${minutes}`)
+      setLocalDate(`TODAY, ${month} ${day}`)
+    }
+    updateTime()
+    const timer = setInterval(updateTime, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const dest = DESTINATIONS[activeDestination]
+  // Extract number from weather string (e.g. "Warm Rain 24°C" -> "24")
+  const tempMatch = dest.weather.match(/\d+/)
+  const tempVal = tempMatch ? tempMatch[0] : '24'
+  const weatherDesc = dest.weather.replace(/\d+°C|\d+°F/, '').trim()
+
+  // Calculate timer circle circumference
+  const radius = 32
+  const circ = 2 * Math.PI * radius
+  const progressRatio = timeLeft / 2700
+  const strokeOffset = circ - (progressRatio * circ)
+
+  return (
+    <div className="mobile-immersive-hero">
+      {/* Immersive background layer */}
+      <div 
+        className="mobile-hero-bg"
+        style={{ backgroundImage: `url(${dest.image})` }}
+      />
+      {/* Sun/Moon light glow overlay */}
+      <div className={`mobile-hero-glow ${activeDestination === 1 ? 'dunes' : activeDestination === 2 ? 'alpine' : 'forest'}`} />
+      
+      {/* Night Desert Animations */}
+      {activeDestination === 1 && (
+        <>
+          <div className="dunes-moon-glow" />
+          
+          {/* Campfire glow & rising sparks only when fire sound is selected */}
+          {activeSounds.includes('campfire') && (
+            <>
+              <div className="dunes-fire-glow" />
+              <div className="desert-sparks-overlay">
+                <div className="spark-particle s-1" />
+                <div className="spark-particle s-2" />
+                <div className="spark-particle s-3" />
+                <div className="spark-particle s-4" />
+                <div className="spark-particle s-5" />
+              </div>
+            </>
+          )}
+
+          {/* Floating music notes only when oud or ney sound is selected */}
+          {(activeSounds.includes('oud') || activeSounds.includes('ney')) && (
+            <div className="dunes-music-notes-overlay">
+              <div className="music-note n-1">♪</div>
+              <div className="music-note n-2">♫</div>
+              <div className="music-note n-3">♩</div>
+              <div className="music-note n-4">♬</div>
+            </div>
+          )}
+
+          {/* Animated wind haze sweeps only when wind sound is selected */}
+          {activeSounds.includes('dunes_wind') && (
+            <div className="dunes-wind-overlay">
+              <div className="wind-haze-sweep h-1" />
+              <div className="wind-haze-sweep h-2" />
+              <div className="wind-haze-sweep h-3" />
+            </div>
+          )}
+        </>
+      )}
+      
+      {/* Rain animation overlay */}
+      {isPlaying && activeSounds.includes('rain') && (
+        <div className="mobile-rain-overlay" />
+      )}
+      {/* Snow animation overlay */}
+      {isPlaying && activeSounds.includes('snow') && (
+        <div className="mobile-snow-overlay" />
+      )}
+
+      {/* Floating Animated Silhouettes - Camels move only when bells sound is active */}
+      {activeDestination === 1 && activeSounds.includes('camel_bells') && (
+        <div className="mobile-camel-caravan">
+          <svg viewBox="0 0 100 40" fill="currentColor" style={{ width: '80px', height: '30px' }}>
+            {/* Camel 1 */}
+            <path d="M15,25 Q17,20 18,22 T20,20 T22,23 T25,25 L26,35 L24,35 L23,28 L21,28 L20,35 L18,35 Z" />
+            {/* Rope 1-2 */}
+            <path d="M25,25 Q30,22 35,23" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
+            {/* Camel 2 */}
+            <path d="M35,23 Q37,18 38,20 T40,18 T42,21 T45,23 L46,33 L44,33 L43,26 L41,26 L40,33 L38,33 Z" />
+            {/* Rope 2-3 */}
+            <path d="M45,23 Q50,24 55,25" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
+            {/* Camel 3 */}
+            <path d="M55,25 Q57,20 58,22 T60,20 T62,23 T65,25 L66,35 L64,35 L63,28 L61,28 L60,35 L58,35 Z" />
+            {/* Lead Rope */}
+            <path d="M15,25 Q10,25 6,27" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
+            {/* Guide Person leading caravan */}
+            <circle cx="5" cy="24" r="1.5" />
+            <path d="M3,26 L7,26 L8,35 L3,35 Z" />
+          </svg>
+        </div>
+      )}
+
+      {/* Top Navigation Bar */}
+      <div className="mobile-hero-nav" style={{ marginTop: '4.5rem', justifyContent: 'center' }}>
+        <div className="mobile-nav-center">
+          <span className="mobile-nav-location">
+            <MapPin size={14} style={{ marginRight: '4px' }} />
+            {dest.title}
+          </span>
+          <span className="mobile-nav-date">{localDate} • {localTime}</span>
+        </div>
+      </div>
+
+      {/* Hero Temperature Block */}
+      <div className="mobile-hero-temp-block">
+        <div className="temp-number-row">
+          <span className="temp-number">{tempVal}</span>
+          <span className="temp-degree-symbol">°</span>
+        </div>
+        <span className="temp-subtitle">
+          Feels like {parseInt(tempVal) + 2}° • {weatherDesc || 'Calm'}
+        </span>
+      </div>
+
+      {/* Central Playback & Interactive Ring */}
+      <div className="mobile-hero-playback-section">
+        <div className="mobile-playback-ring-wrapper">
+          <svg className={`timer-svg ${isPlaying ? 'playing' : ''}`} width="90" height="90">
+            <circle 
+              className="timer-ring-bg"
+              cx="45" 
+              cy="45" 
+              r={radius} 
+            />
+            <circle 
+              className="timer-ring-fill"
+              cx="45" 
+              cy="45" 
+              r={radius}
+              strokeDasharray={circ}
+              strokeDashoffset={strokeOffset}
+            />
+          </svg>
+          <button 
+            className={`mobile-main-play-btn ${isPlaying ? 'playing' : ''}`}
+            onClick={togglePlayback}
+            aria-label={isPlaying ? 'Pause ambient soundscape' : 'Play ambient soundscape'}
+          >
+            {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Glassmorphic Sound Drawer Sheet */}
+      <div className="mobile-sound-drawer-sheet">
+        <div className="drawer-handle" />
+        
+        <div className="drawer-scroll-container">
+          {getMixSounds(activeDestination).map((sound) => {
+            const isActive = activeSounds.includes(sound.id)
+            const IconComponent = sound.icon
+            return (
+              <div 
+                key={sound.id} 
+                className={`drawer-sound-card ${isActive ? 'active' : ''}`}
+                onClick={() => toggleSound(sound.id)}
+              >
+                <div className="sound-card-icon-box">
+                  <IconComponent size={24} className="sound-card-icon" />
+                </div>
+                <span className="sound-card-label">{sound.name}</span>
+                {isActive && (
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={soundVolumes[sound.id] || 0}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => handleVolumeChange(sound.id, Number(e.target.value))}
+                    className="drawer-card-volume"
+                  />
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // Toast Component
@@ -446,8 +972,8 @@ const DESTINATIONS = [
     description: 'Breathe in the cool desert air as the dry wind whispers over shifting sands under a dome of stars.',
     image: '/celestial_desert.png',
     weather: 'Clear Sky 18°C',
-    sounds: ['Cosmic Wind', 'Subtle Echoes'],
-    volPreset: { wind: 60, music: 30 }
+    sounds: ['Desert Wind', 'Drifting Sand', 'Oud Melodies', 'Crickets'],
+    volPreset: { dunes_wind: 60, sand_drift: 35, oud: 45, crickets: 40 }
   },
   {
     id: 'alpine',
@@ -555,6 +1081,25 @@ const MIX_SOUNDS = [
   { id: 'music', name: 'Ambient Music', icon: Music, color: '#c084fc' }
 ]
 
+// Dynamic Mixer Sounds selector
+const getMixSounds = (activeDest) => {
+  if (activeDest === 1) {
+    return [
+      { id: 'dunes_wind', name: 'Desert Wind', icon: Wind, color: '#f59e0b' },
+      { id: 'sand_drift', name: 'Drifting Sand', icon: Sliders, color: '#fbbf24' },
+      { id: 'campfire', name: 'Campfire', icon: Flame, color: '#ea580c' },
+      { id: 'tent_fabric', name: 'Tent Flutter', icon: Layers, color: '#94a3b8' },
+      { id: 'oud', name: 'Oud Melodies', icon: Music, color: '#a78bfa' },
+      { id: 'ney', name: 'Ney Flute', icon: Music, color: '#818cf8' },
+      { id: 'crickets', name: 'Crickets', icon: Volume2, color: '#34d399' },
+      { id: 'night_ambient', name: 'Night Ambient', icon: Moon, color: '#38bdf8' },
+      { id: 'camel_bells', name: 'Camel Bells', icon: Bell, color: '#fb7185' },
+      { id: 'falcon', name: 'Falcon Cry', icon: BirdIcon, color: '#f472b6' }
+    ];
+  }
+  return MIX_SOUNDS;
+}
+
 // Bird icon fallback component
 function BirdIcon(props) {
   return (
@@ -600,10 +1145,18 @@ const PRESET_MIXES = [
 ]
 
 function App() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   const [scrollProgress, setScrollProgress] = useState(0)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
-  const [activeDestination, setActiveDestination] = useState(0)
+  const [activeDestination, setActiveDestination] = useState(1)
 
   // Phone Mockup Tilt Effect
   const [tiltStyle, setTiltStyle] = useState({})
@@ -612,8 +1165,12 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false)
 
   // Sound Mixer States
-  const [activeSounds, setActiveSounds] = useState(['rain', 'wind', 'music'])
+  const [activeSounds, setActiveSounds] = useState(['dunes_wind', 'sand_drift', 'oud', 'crickets'])
   const [soundVolumes, setSoundVolumes] = useState({
+    dunes_wind: 60,
+    sand_drift: 35,
+    oud: 45,
+    crickets: 40,
     rain: 65,
     wind: 40,
     thunder: 30,
@@ -646,7 +1203,8 @@ function App() {
         synthRef.current.start(soundId, vol)
         synthRef.current.setVolume(soundId, vol)
       })
-      MIX_SOUNDS.forEach((snd) => {
+      const allPossibleSounds = [...MIX_SOUNDS, ...getMixSounds(1)]
+      allPossibleSounds.forEach((snd) => {
         if (!active.includes(snd.id)) {
           synthRef.current.stop(snd.id)
         }
@@ -842,9 +1400,29 @@ function App() {
 
   return (
     <>
+      {/* Heat Shimmer SVG Filter Definition */}
+      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }} aria-hidden="true">
+        <filter id="heat-shimmer">
+          <feTurbulence type="fractalNoise" baseFrequency="0.015 0.04" numOctaves="2" result="noise">
+            <animate attributeName="baseFrequency" values="0.015 0.04; 0.015 0.06; 0.015 0.04" dur="12s" repeatCount="indefinite" />
+          </feTurbulence>
+          <feDisplacementMap 
+            in="SourceGraphic" 
+            in2="noise" 
+            scale={
+              activeDestination === 1 
+                ? (activeSounds.includes('wind') ? 8 : 0) + (activeSounds.includes('drift') ? 10 : 0) + 3 
+                : 5
+            } 
+            xChannelSelector="R" 
+            yChannelSelector="G" 
+          />
+        </filter>
+      </svg>
+
       {/* Background System */}
       <div
-        className="zephyr-backdrop"
+        className={`zephyr-backdrop ${activeDestination === 1 ? 'theme-dunes' : ''}`}
         style={{
           '--theme-bg-1': themeBg1,
           '--theme-bg-2': themeBg2,
@@ -890,7 +1468,6 @@ function App() {
       <header className="app-header">
         <div className="header-container">
           <a href="#" className="brand" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
-            <div className="brand-icon">S</div>
             <span className="brand-name">Zephyr</span>
           </a>
 
@@ -918,9 +1495,22 @@ function App() {
       <main style={{ flex: 1 }}>
         
         {/* 1. Hero Section */}
-        <section className="hero-section">
-          {/* Subtle sun parallax element */}
-          <div className="landscape-sun" style={{ '--sun-y': `${scrollProgress * 200}px` }} />
+        {isMobile ? (
+          <MobileHeroView 
+            activeDestination={activeDestination}
+            DESTINATIONS={DESTINATIONS}
+            isPlaying={isPlaying}
+            togglePlayback={togglePlayback}
+            activeSounds={activeSounds}
+            toggleSound={toggleSound}
+            soundVolumes={soundVolumes}
+            handleVolumeChange={handleVolumeChange}
+            timeLeft={timeLeft}
+          />
+        ) : (
+          <section className="hero-section">
+            {/* Subtle sun parallax element */}
+            <div className="landscape-sun" style={{ '--sun-y': `${scrollProgress * 200}px` }} />
 
           {/* Soaring birds */}
           <div className="nature-birds">
@@ -971,6 +1561,68 @@ function App() {
                           opacity: isPlaying ? 0.35 : 0.15
                         }}
                       />
+                      {/* Night Desert Animations inside phone preview */}
+                      {activeDestination === 1 && (
+                        <>
+                          <div className="dunes-moon-glow" />
+                          
+                          {/* Campfire glow & rising sparks only when fire sound is selected */}
+                          {activeSounds.includes('fire') && (
+                            <>
+                              <div className="dunes-fire-glow" />
+                              <div className="desert-sparks-overlay">
+                                <div className="spark-particle s-1" />
+                                <div className="spark-particle s-2" />
+                                <div className="spark-particle s-3" />
+                                <div className="spark-particle s-4" />
+                                <div className="spark-particle s-5" />
+                              </div>
+                            </>
+                          )}
+
+                          {/* Floating music notes only when oud or ney sound is selected */}
+                          {(activeSounds.includes('oud') || activeSounds.includes('ney')) && (
+                            <div className="dunes-music-notes-overlay">
+                              <div className="music-note n-1">♪</div>
+                              <div className="music-note n-2">♫</div>
+                              <div className="music-note n-3">♩</div>
+                              <div className="music-note n-4">♬</div>
+                            </div>
+                          )}
+
+                          {/* Floating Animated Silhouettes - Camels move only when bells sound is active */}
+                          {activeSounds.includes('camel_bells') && (
+                            <div className="mobile-camel-caravan">
+                              <svg viewBox="0 0 100 40" fill="currentColor" style={{ width: '80px', height: '30px' }}>
+                                {/* Camel 1 */}
+                                <path d="M15,25 Q17,20 18,22 T20,20 T22,23 T25,25 L26,35 L24,35 L23,28 L21,28 L20,35 L18,35 Z" />
+                                {/* Rope 1-2 */}
+                                <path d="M25,25 Q30,22 35,23" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
+                                {/* Camel 2 */}
+                                <path d="M35,23 Q37,18 38,20 T40,18 T42,21 T45,23 L46,33 L44,33 L43,26 L41,26 L40,33 L38,33 Z" />
+                                {/* Rope 2-3 */}
+                                <path d="M45,23 Q50,24 55,25" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
+                                {/* Camel 3 */}
+                                <path d="M55,25 Q57,20 58,22 T60,20 T62,23 T65,25 L66,35 L64,35 L63,28 L61,28 L60,35 L58,35 Z" />
+                                {/* Lead Rope */}
+                                <path d="M15,25 Q10,25 6,27" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
+                                {/* Guide Person leading caravan */}
+                                <circle cx="5" cy="24" r="1.5" />
+                                <path d="M3,26 L7,26 L8,35 L3,35 Z" />
+                              </svg>
+                            </div>
+                          )}
+
+                          {/* Animated wind haze sweeps only when wind sound is selected */}
+                          {activeSounds.includes('dunes_wind') && (
+                            <div className="dunes-wind-overlay">
+                              <div className="wind-haze-sweep h-1" />
+                              <div className="wind-haze-sweep h-2" />
+                              <div className="wind-haze-sweep h-3" />
+                            </div>
+                          )}
+                        </>
+                      )}
                       
                       <div className="phone-ui-header">
                         <Sliders size={18} className="phone-ui-title" />
@@ -1022,7 +1674,7 @@ function App() {
                                   onChange={(e) => handleVolumeChange(sound.id, Number(e.target.value))}
                                   className="phone-ui-slider-input"
                                   style={{
-                                    background: `linear-gradient(to right, var(--c-lavender-bright) 0%, var(--c-lavender-bright) ${soundVolumes[sound.id] || 0}%, rgba(255,255,255,0.1) ${soundVolumes[sound.id] || 0}%, rgba(255,255,255,0.1) 100%)`
+                                    background: `linear-gradient(to right, #ffffff 0%, #ffffff ${soundVolumes[sound.id] || 0}%, rgba(255,255,255,0.1) ${soundVolumes[sound.id] || 0}%, rgba(255,255,255,0.1) 100%)`
                                   }}
                                   aria-label={`Adjust volume of ${sound.name} inside phone mockup`}
                                 />
@@ -1076,6 +1728,7 @@ function App() {
             </div>
           </div>
         </section>
+        )}
 
         {/* 2. Trusted / Featured Section */}
         <section className="trusted-section">
@@ -1230,7 +1883,7 @@ function App() {
 
               {/* Sound toggler chips grid */}
               <div className="sound-chips-grid">
-                {MIX_SOUNDS.map((sound) => {
+                {getMixSounds(activeDestination).map((sound) => {
                   const isActive = activeSounds.includes(sound.id)
                   return (
                     <div
@@ -1252,7 +1905,7 @@ function App() {
               {activeSounds.length > 0 ? (
                 <div className="mixer-sliders-list">
                   {activeSounds.map((soundId) => {
-                    const soundItem = MIX_SOUNDS.find((s) => s.id === soundId)
+                    const soundItem = getMixSounds(activeDestination).find((s) => s.id === soundId)
                     if (!soundItem) return null
                     return (
                       <div key={soundId} className="mixer-slider-item">
@@ -1678,7 +2331,6 @@ function App() {
         <div className="footer-container">
           <div className="footer-logo-row">
             <div className="brand" style={{ padding: 0 }}>
-              <div className="brand-icon">S</div>
               <span className="brand-name">Zephyr</span>
             </div>
             <span className="footer-tagline">Calm atmospheric worlds at your fingertips.</span>
