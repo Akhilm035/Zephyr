@@ -791,9 +791,12 @@ function MobileHeroView({
 }) {
   const [localTime, setLocalTime] = useState('')
   const [localDate, setLocalDate] = useState('')
+  
+  // Real-time touch drag & smooth slide physics
   const [touchStart, setTouchStart] = useState(0)
-  const [touchEnd, setTouchEnd] = useState(0)
-  const [swipeDirection, setSwipeDirection] = useState(null)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [slideAnim, setSlideAnim] = useState('')
 
   useEffect(() => {
     const updateTime = () => {
@@ -823,59 +826,75 @@ function MobileHeroView({
   const progressRatio = timeLeft / 2700
   const strokeOffset = circ - (progressRatio * circ)
 
-  // Touch Swipe Handlers for mobile swiping between locations
+  // Touch Swipe Handlers for smooth 1:1 dragging
   const handleTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX)
-    setTouchEnd(e.targetTouches[0].clientX)
+    setTouchStart(e.touches[0].clientX)
+    setIsDragging(true)
   }
 
   const handleTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX)
+    if (!isDragging) return
+    const currentX = e.touches[0].clientX
+    const diff = currentX - touchStart
+    setDragOffset(diff)
+  }
+
+  const switchSlide = (newIndex, dir) => {
+    setSlideAnim(`out-${dir}`)
+    setTimeout(() => {
+      selectDestination(newIndex)
+      setSlideAnim(`in-${dir}`)
+      setDragOffset(0)
+      setTimeout(() => setSlideAnim(''), 250)
+    }, 120)
   }
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return
-    const distance = touchStart - touchEnd
-    const minSwipeDistance = 45
+    if (!isDragging) return
+    setIsDragging(false)
+    const threshold = 45
 
-    if (distance > minSwipeDistance) {
+    if (dragOffset < -threshold) {
       // Swiped left -> Next location
-      setSwipeDirection('left')
       const nextIndex = (activeDestination + 1) % DESTINATIONS.length
-      selectDestination(nextIndex)
-    } else if (distance < -minSwipeDistance) {
+      switchSlide(nextIndex, 'left')
+    } else if (dragOffset > threshold) {
       // Swiped right -> Previous location
-      setSwipeDirection('right')
       const prevIndex = (activeDestination - 1 + DESTINATIONS.length) % DESTINATIONS.length
-      selectDestination(prevIndex)
+      switchSlide(prevIndex, 'right')
+    } else {
+      setDragOffset(0)
     }
-    setTimeout(() => setSwipeDirection(null), 300)
   }
 
   const goToPrev = (e) => {
     e.stopPropagation()
     const prevIndex = (activeDestination - 1 + DESTINATIONS.length) % DESTINATIONS.length
-    selectDestination(prevIndex)
+    switchSlide(prevIndex, 'right')
   }
 
   const goToNext = (e) => {
     e.stopPropagation()
     const nextIndex = (activeDestination + 1) % DESTINATIONS.length
-    selectDestination(nextIndex)
+    switchSlide(nextIndex, 'left')
   }
 
   return (
     <div 
-      className={`mobile-immersive-hero swipe-anim-${swipeDirection || 'idle'}`}
+      className="mobile-immersive-hero"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Immersive background layer */}
-      <div 
-        className="mobile-hero-bg"
-        style={{ backgroundImage: `url(${dest.image})` }}
-      />
+      {/* Immersive background layers with smooth crossfade */}
+      {DESTINATIONS.map((item, idx) => (
+        <div 
+          key={item.id}
+          className={`mobile-hero-bg ${idx === activeDestination ? 'active' : ''}`}
+          style={{ backgroundImage: `url(${item.image})` }}
+        />
+      ))}
+
       {/* Sun/Moon light glow overlay */}
       <div className={`mobile-hero-glow ${activeDestination === 1 ? 'dunes' : activeDestination === 2 ? 'alpine' : activeDestination === 0 ? 'forest' : 'ambient'}`} />
       
@@ -944,86 +963,115 @@ function MobileHeroView({
         </div>
       )}
 
-      {/* Top Location Swipe Controls & Info Header */}
-      <div className="mobile-location-swipe-bar">
-        <button 
-          className="mobile-swipe-arrow left" 
-          onClick={goToPrev}
-          aria-label="Previous Location Soundscape"
-        >
-          <ChevronLeft size={22} />
-        </button>
-
-        <div className="mobile-location-center-card">
-          <h2 className="mobile-dest-title">
-            <MapPin size={16} style={{ color: 'var(--c-sunset)', marginRight: '6px' }} />
-            {dest.title}
-          </h2>
-          <span className="mobile-dest-sublocation">{dest.location}</span>
-        </div>
-
-        <button 
-          className="mobile-swipe-arrow right" 
-          onClick={goToNext}
-          aria-label="Next Location Soundscape"
-        >
-          <ChevronRight size={22} />
-        </button>
-      </div>
-
-      {/* Swipe Pagination Dots */}
-      <div className="mobile-swipe-dots">
-        {DESTINATIONS.map((d, index) => (
-          <button
-            key={d.id}
-            className={`swipe-dot ${index === activeDestination ? 'active' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation()
-              selectDestination(index)
-            }}
-            aria-label={`Go to ${d.title}`}
-          />
-        ))}
-      </div>
-
-      {/* Hero Temperature & Date Block */}
-      <div className="mobile-hero-temp-block">
-        <span className="mobile-nav-date">{localDate} • {localTime}</span>
-        <div className="temp-number-row">
-          <span className="temp-number">{tempVal}</span>
-          <span className="temp-degree-symbol">°</span>
-        </div>
-        <span className="temp-subtitle">
-          Feels like {parseInt(tempVal) + 2}° • {weatherDesc || 'Calm'}
-        </span>
-      </div>
-
-      {/* Central Playback & Interactive Ring */}
-      <div className="mobile-hero-playback-section">
-        <div className="mobile-playback-ring-wrapper">
-          <svg className={`timer-svg ${isPlaying ? 'playing' : ''}`} width="90" height="90">
-            <circle 
-              className="timer-ring-bg"
-              cx="45" 
-              cy="45" 
-              r={radius} 
-            />
-            <circle 
-              className="timer-ring-fill"
-              cx="45" 
-              cy="45" 
-              r={radius}
-              strokeDasharray={circ}
-              strokeDashoffset={strokeOffset}
-            />
-          </svg>
+      {/* Interactive Touch Slider Container */}
+      <div 
+        className={`mobile-hero-content-slider ${isDragging ? 'is-dragging' : 'is-smooth'} ${slideAnim}`}
+        style={{
+          transform: isDragging 
+            ? `translateX(${dragOffset}px)`
+            : dragOffset !== 0
+            ? `translateX(${dragOffset}px)`
+            : 'none',
+          opacity: isDragging ? Math.max(0.65, 1 - Math.abs(dragOffset) / 450) : 1
+        }}
+      >
+        {/* Minimalist Floating Location Navigation */}
+        <div className="mobile-location-minimal-header">
           <button 
-            className={`mobile-main-play-btn ${isPlaying ? 'playing' : ''}`}
-            onClick={togglePlayback}
-            aria-label={isPlaying ? 'Pause ambient soundscape' : 'Play ambient soundscape'}
+            className="minimal-arrow left" 
+            onClick={goToPrev}
+            aria-label="Previous Location"
           >
-            {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />}
+            <ChevronLeft size={20} />
           </button>
+
+          <div className="minimal-location-info">
+            <h2 className="minimal-dest-title">{dest.title}</h2>
+            <span 
+              className="minimal-dest-sublocation"
+              style={{
+                color: dest.accentColor || 'rgba(255, 255, 255, 0.65)',
+                textShadow: `0 0 10px ${dest.glowColor || 'rgba(0,0,0,0.5)'}`
+              }}
+            >
+              {dest.location}
+            </span>
+          </div>
+
+          <button 
+            className="minimal-arrow right" 
+            onClick={goToNext}
+            aria-label="Next Location"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+
+        {/* Sleek Progress Dots with Dynamic Accent Glow */}
+        <div className="mobile-minimal-dots">
+          {DESTINATIONS.map((d, index) => {
+            const isSel = index === activeDestination
+            return (
+              <button
+                key={d.id}
+                className={`minimal-dot ${isSel ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  selectDestination(index)
+                }}
+                style={
+                  isSel
+                    ? {
+                        backgroundColor: dest.accentColor || '#ffffff',
+                        boxShadow: `0 0 10px ${dest.glowColor || 'rgba(255, 255, 255, 0.6)'}`
+                      }
+                    : undefined
+                }
+                aria-label={`Go to ${d.title}`}
+              />
+            )
+          })}
+        </div>
+
+        {/* Hero Temperature & Date Block */}
+        <div className="mobile-hero-temp-block">
+          <span className="mobile-nav-date">{localDate} • {localTime}</span>
+          <div className="temp-number-row">
+            <span className="temp-number">{tempVal}</span>
+            <span className="temp-degree-symbol">°</span>
+          </div>
+          <span className="temp-subtitle">
+            Feels like {parseInt(tempVal) + 2}° • {weatherDesc || 'Calm'}
+          </span>
+        </div>
+
+        {/* Central Playback & Interactive Ring */}
+        <div className="mobile-hero-playback-section">
+          <div className="mobile-playback-ring-wrapper">
+            <svg className={`timer-svg ${isPlaying ? 'playing' : ''}`} width="90" height="90">
+              <circle 
+                className="timer-ring-bg"
+                cx="45" 
+                cy="45" 
+                r={radius} 
+              />
+              <circle 
+                className="timer-ring-fill"
+                cx="45" 
+                cy="45" 
+                r={radius}
+                strokeDasharray={circ}
+                strokeDashoffset={strokeOffset}
+              />
+            </svg>
+            <button 
+              className={`mobile-main-play-btn ${isPlaying ? 'playing' : ''}`}
+              onClick={togglePlayback}
+              aria-label={isPlaying ? 'Pause ambient soundscape' : 'Play ambient soundscape'}
+            >
+              {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1089,6 +1137,8 @@ const DESTINATIONS = [
     description: 'Immerse in tropical rainfall and soothing bird chatter under a thick canopy of emerald greens.',
     image: '/ancient_forest.png',
     weather: 'Warm Rain 24°C',
+    accentColor: '#4ade80', // Emerald Leaf Green
+    glowColor: 'rgba(74, 222, 128, 0.5)',
     sounds: ['Rain', 'Birds', 'Wind'],
     volPreset: { rain: 75, birds: 60, wind: 40 }
   },
@@ -1099,6 +1149,8 @@ const DESTINATIONS = [
     description: 'Breathe in the cool desert air as the dry wind whispers over shifting sands under a dome of stars.',
     image: '/celestial_desert.png',
     weather: 'Clear Sky 18°C',
+    accentColor: '#fbbf24', // Warm Sand Gold
+    glowColor: 'rgba(251, 191, 36, 0.55)',
     sounds: ['Desert Wind', 'Drifting Sand', 'Oud Melodies', 'Crickets'],
     volPreset: { dunes_wind: 60, sand_drift: 35, oud: 45, crickets: 40 }
   },
@@ -1109,6 +1161,8 @@ const DESTINATIONS = [
     description: 'Sit beside a roaring glacier stream as gusty mountain winds brush past the snowy heights.',
     image: '/alpine_peaks.png',
     weather: 'Chilly Breeze -2°C',
+    accentColor: '#60a5fa', // Glacial Ice Blue
+    glowColor: 'rgba(96, 165, 250, 0.5)',
     sounds: ['Stream', 'Wind', 'Thunder'],
     volPreset: { wind: 70, thunder: 35, rain: 20 }
   },
@@ -1119,6 +1173,8 @@ const DESTINATIONS = [
     description: 'Cracking pine logs under an old-growth redwood sky, accompanied by crickets and warm guitar chords.',
     image: '/better_sleep.png',
     weather: 'Clear Twilight 12°C',
+    accentColor: '#f97316', // Ember Fire Coral
+    glowColor: 'rgba(249, 115, 22, 0.55)',
     sounds: ['Campfire', 'Crickets', 'Acoustic Lofi'],
     volPreset: { fire: 80, music: 45, wind: 20 }
   },
@@ -1129,6 +1185,8 @@ const DESTINATIONS = [
     description: 'Relax to the slow, heavy rise and fall of giant Pacific waves breaking on a warm sandy shore.',
     image: '/hero_background.png',
     weather: 'Tropical Breeze 26°C',
+    accentColor: '#38bdf8', // Pacific Marine Cyan
+    glowColor: 'rgba(56, 189, 248, 0.5)',
     sounds: ['Ocean Waves', 'Wind'],
     volPreset: { ocean: 75, wind: 35 }
   },
@@ -1139,6 +1197,8 @@ const DESTINATIONS = [
     description: 'Sip tea near a trickling bamboo fountain while cherry blossom petals fall silently into the pond.',
     image: '/study_sessions.png',
     weather: 'Mist Fog 16°C',
+    accentColor: '#f472b6', // Sakura Violet Pink
+    glowColor: 'rgba(244, 114, 182, 0.5)',
     sounds: ['Fountain', 'Soft Lofi', 'Birds'],
     volPreset: { birds: 50, music: 60, rain: 15 }
   }
