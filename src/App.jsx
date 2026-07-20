@@ -480,6 +480,58 @@ class AmbientSynthEngine {
       noise.start();
       sourceNodes.push(noise, ampLFO);
     }
+    else if (soundId === 'stream') {
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 600;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.5;
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 250;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+
+      noise.connect(filter);
+      filter.connect(gainNode);
+
+      lfo.start();
+      noise.start();
+      sourceNodes.push(noise, lfo);
+    }
+    else if (soundId === 'fountain') {
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1400;
+      filter.Q.value = 1.2;
+
+      noise.connect(filter);
+      filter.connect(gainNode);
+
+      noise.start();
+      sourceNodes.push(noise);
+    }
     else if (soundId === 'oud') {
       const scale = [220.00, 233.08, 293.66, 311.13, 392.00, 415.30, 466.16, 523.25];
       const playOud = () => {
@@ -727,6 +779,7 @@ class AmbientSynthEngine {
 // Mobile Immersive Hero View
 function MobileHeroView({
   activeDestination,
+  selectDestination,
   DESTINATIONS,
   isPlaying,
   togglePlayback,
@@ -738,6 +791,9 @@ function MobileHeroView({
 }) {
   const [localTime, setLocalTime] = useState('')
   const [localDate, setLocalDate] = useState('')
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+  const [swipeDirection, setSwipeDirection] = useState(null)
 
   useEffect(() => {
     const updateTime = () => {
@@ -767,15 +823,61 @@ function MobileHeroView({
   const progressRatio = timeLeft / 2700
   const strokeOffset = circ - (progressRatio * circ)
 
+  // Touch Swipe Handlers for mobile swiping between locations
+  const handleTouchStart = (e) => {
+    setTouchStart(e.targetTouches[0].clientX)
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    const minSwipeDistance = 45
+
+    if (distance > minSwipeDistance) {
+      // Swiped left -> Next location
+      setSwipeDirection('left')
+      const nextIndex = (activeDestination + 1) % DESTINATIONS.length
+      selectDestination(nextIndex)
+    } else if (distance < -minSwipeDistance) {
+      // Swiped right -> Previous location
+      setSwipeDirection('right')
+      const prevIndex = (activeDestination - 1 + DESTINATIONS.length) % DESTINATIONS.length
+      selectDestination(prevIndex)
+    }
+    setTimeout(() => setSwipeDirection(null), 300)
+  }
+
+  const goToPrev = (e) => {
+    e.stopPropagation()
+    const prevIndex = (activeDestination - 1 + DESTINATIONS.length) % DESTINATIONS.length
+    selectDestination(prevIndex)
+  }
+
+  const goToNext = (e) => {
+    e.stopPropagation()
+    const nextIndex = (activeDestination + 1) % DESTINATIONS.length
+    selectDestination(nextIndex)
+  }
+
   return (
-    <div className="mobile-immersive-hero">
+    <div 
+      className={`mobile-immersive-hero swipe-anim-${swipeDirection || 'idle'}`}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Immersive background layer */}
       <div 
         className="mobile-hero-bg"
         style={{ backgroundImage: `url(${dest.image})` }}
       />
       {/* Sun/Moon light glow overlay */}
-      <div className={`mobile-hero-glow ${activeDestination === 1 ? 'dunes' : activeDestination === 2 ? 'alpine' : 'forest'}`} />
+      <div className={`mobile-hero-glow ${activeDestination === 1 ? 'dunes' : activeDestination === 2 ? 'alpine' : activeDestination === 0 ? 'forest' : 'ambient'}`} />
       
       {/* Night Desert Animations */}
       {activeDestination === 1 && (
@@ -830,38 +932,67 @@ function MobileHeroView({
       {activeDestination === 1 && activeSounds.includes('camel_bells') && (
         <div className="mobile-camel-caravan">
           <svg viewBox="0 0 100 40" fill="currentColor" style={{ width: '80px', height: '30px' }}>
-            {/* Camel 1 */}
             <path d="M15,25 Q17,20 18,22 T20,20 T22,23 T25,25 L26,35 L24,35 L23,28 L21,28 L20,35 L18,35 Z" />
-            {/* Rope 1-2 */}
             <path d="M25,25 Q30,22 35,23" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-            {/* Camel 2 */}
             <path d="M35,23 Q37,18 38,20 T40,18 T42,21 T45,23 L46,33 L44,33 L43,26 L41,26 L40,33 L38,33 Z" />
-            {/* Rope 2-3 */}
             <path d="M45,23 Q50,24 55,25" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-            {/* Camel 3 */}
             <path d="M55,25 Q57,20 58,22 T60,20 T62,23 T65,25 L66,35 L64,35 L63,28 L61,28 L60,35 L58,35 Z" />
-            {/* Lead Rope */}
             <path d="M15,25 Q10,25 6,27" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-            {/* Guide Person leading caravan */}
             <circle cx="5" cy="24" r="1.5" />
             <path d="M3,26 L7,26 L8,35 L3,35 Z" />
           </svg>
         </div>
       )}
 
-      {/* Top Navigation Bar */}
-      <div className="mobile-hero-nav" style={{ marginTop: '4.5rem', justifyContent: 'center' }}>
-        <div className="mobile-nav-center">
-          <span className="mobile-nav-location">
-            <MapPin size={14} style={{ marginRight: '4px' }} />
+      {/* Top Location Swipe Controls & Info Header */}
+      <div className="mobile-location-swipe-bar">
+        <button 
+          className="mobile-swipe-arrow left" 
+          onClick={goToPrev}
+          aria-label="Previous Location Soundscape"
+        >
+          <ChevronLeft size={22} />
+        </button>
+
+        <div className="mobile-location-center-card">
+          <div className="swipe-badge-hint">
+            <Sparkles size={11} className="sparkle-icon" />
+            <span>SWIPE LOCATION SOUNDS ({activeDestination + 1}/{DESTINATIONS.length})</span>
+          </div>
+          <h2 className="mobile-dest-title">
+            <MapPin size={16} style={{ color: 'var(--c-sunset)', marginRight: '6px' }} />
             {dest.title}
-          </span>
-          <span className="mobile-nav-date">{localDate} • {localTime}</span>
+          </h2>
+          <span className="mobile-dest-sublocation">{dest.location}</span>
         </div>
+
+        <button 
+          className="mobile-swipe-arrow right" 
+          onClick={goToNext}
+          aria-label="Next Location Soundscape"
+        >
+          <ChevronRight size={22} />
+        </button>
       </div>
 
-      {/* Hero Temperature Block */}
+      {/* Swipe Pagination Dots */}
+      <div className="mobile-swipe-dots">
+        {DESTINATIONS.map((d, index) => (
+          <button
+            key={d.id}
+            className={`swipe-dot ${index === activeDestination ? 'active' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation()
+              selectDestination(index)
+            }}
+            aria-label={`Go to ${d.title}`}
+          />
+        ))}
+      </div>
+
+      {/* Hero Temperature & Date Block */}
       <div className="mobile-hero-temp-block">
+        <span className="mobile-nav-date">{localDate} • {localTime}</span>
         <div className="temp-number-row">
           <span className="temp-number">{tempVal}</span>
           <span className="temp-degree-symbol">°</span>
@@ -898,12 +1029,22 @@ function MobileHeroView({
             {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />}
           </button>
         </div>
+
+        <div className="mobile-active-track-name">
+          <span className="pulse-dot" />
+          <span>{dest.title} Soundscape</span>
+        </div>
       </div>
 
       {/* Glassmorphic Sound Drawer Sheet */}
       <div className="mobile-sound-drawer-sheet">
         <div className="drawer-handle" />
         
+        <div className="drawer-header">
+          <span className="drawer-title">{dest.title} Ambient Layering</span>
+          <span className="drawer-desc">Tap to toggle or adjust volume sliders for {dest.location}</span>
+        </div>
+
         <div className="drawer-scroll-container">
           {getMixSounds(activeDestination).map((sound) => {
             const isActive = activeSounds.includes(sound.id)
@@ -915,7 +1056,7 @@ function MobileHeroView({
                 onClick={() => toggleSound(sound.id)}
               >
                 <div className="sound-card-icon-box">
-                  <IconComponent size={24} className="sound-card-icon" />
+                  <IconComponent size={22} className="sound-card-icon" />
                 </div>
                 <span className="sound-card-label">{sound.name}</span>
                 {isActive && (
@@ -1081,9 +1222,20 @@ const MIX_SOUNDS = [
   { id: 'music', name: 'Ambient Music', icon: Music, color: '#c084fc' }
 ]
 
-// Dynamic Mixer Sounds selector
+// Dynamic Mixer Sounds selector for all 6 location soundscapes
 const getMixSounds = (activeDest) => {
-  if (activeDest === 1) {
+  if (activeDest === 0) {
+    // Ancient Forest
+    return [
+      { id: 'rain', name: 'Rainfall', icon: CloudRain, color: '#60a5fa' },
+      { id: 'birds', name: 'Forest Birds', icon: BirdIcon, color: '#4ade80' },
+      { id: 'wind', name: 'Canopy Wind', icon: Wind, color: '#a7f3d0' },
+      { id: 'stream', name: 'River Stream', icon: Droplet, color: '#38bdf8' },
+      { id: 'crickets', name: 'Night Crickets', icon: Volume2, color: '#34d399' },
+      { id: 'thunder', name: 'Distant Thunder', icon: Zap, color: '#facc15' }
+    ];
+  } else if (activeDest === 1) {
+    // Celestial Dunes
     return [
       { id: 'dunes_wind', name: 'Desert Wind', icon: Wind, color: '#f59e0b' },
       { id: 'sand_drift', name: 'Drifting Sand', icon: Sliders, color: '#fbbf24' },
@@ -1095,6 +1247,44 @@ const getMixSounds = (activeDest) => {
       { id: 'night_ambient', name: 'Night Ambient', icon: Moon, color: '#38bdf8' },
       { id: 'camel_bells', name: 'Camel Bells', icon: Bell, color: '#fb7185' },
       { id: 'falcon', name: 'Falcon Cry', icon: BirdIcon, color: '#f472b6' }
+    ];
+  } else if (activeDest === 2) {
+    // Alpine Peaks
+    return [
+      { id: 'stream', name: 'Glacier Stream', icon: Droplet, color: '#38bdf8' },
+      { id: 'wind', name: 'Peak Gusts', icon: Wind, color: '#e2e8f0' },
+      { id: 'thunder', name: 'Alpine Storm', icon: Zap, color: '#facc15' },
+      { id: 'snow', name: 'Snowstorm', icon: Snowflake, color: '#93c5fd' },
+      { id: 'birds', name: 'High Eagles', icon: BirdIcon, color: '#4ade80' },
+      { id: 'fire', name: 'Lodge Fire', icon: Flame, color: '#f97316' }
+    ];
+  } else if (activeDest === 3) {
+    // Campfire Night
+    return [
+      { id: 'fire', name: 'Campfire', icon: Flame, color: '#f97316' },
+      { id: 'crickets', name: 'Crickets', icon: Volume2, color: '#34d399' },
+      { id: 'music', name: 'Acoustic Guitar', icon: Music, color: '#c084fc' },
+      { id: 'wind', name: 'Pine Wind', icon: Wind, color: '#cbd5e1' },
+      { id: 'night_ambient', name: 'Night Drone', icon: Moon, color: '#38bdf8' },
+      { id: 'rain', name: 'Soft Drizzle', icon: CloudRain, color: '#60a5fa' }
+    ];
+  } else if (activeDest === 4) {
+    // Deep Ocean
+    return [
+      { id: 'ocean', name: 'Ocean Waves', icon: Droplet, color: '#38bdf8' },
+      { id: 'wind', name: 'Coastal Breeze', icon: Wind, color: '#cbd5e1' },
+      { id: 'rain', name: 'Sea Shower', icon: CloudRain, color: '#60a5fa' },
+      { id: 'music', name: 'Warm Chords', icon: Music, color: '#c084fc' },
+      { id: 'birds', name: 'Seagulls', icon: BirdIcon, color: '#4ade80' }
+    ];
+  } else if (activeDest === 5) {
+    // Japanese Garden
+    return [
+      { id: 'fountain', name: 'Bamboo Water', icon: Droplet, color: '#34d399' },
+      { id: 'birds', name: 'Garden Birds', icon: BirdIcon, color: '#4ade80' },
+      { id: 'music', name: 'Zen Lofi', icon: Music, color: '#c084fc' },
+      { id: 'rain', name: 'Mist Rain', icon: CloudRain, color: '#60a5fa' },
+      { id: 'wind', name: 'Zen Breeze', icon: Wind, color: '#cbd5e1' }
     ];
   }
   return MIX_SOUNDS;
@@ -1356,7 +1546,7 @@ function App() {
   }
 
   // Apply a destination zephyr preset
-  const selectDestination = (index) => {
+  const selectDestination = (index, shouldScroll = false) => {
     setActiveDestination(index)
     const dest = DESTINATIONS[index]
     const activeKeys = Object.keys(dest.volPreset)
@@ -1367,9 +1557,11 @@ function App() {
       return nextVolumes
     })
     showToast(`Exploring destination: ${dest.title}`)
-    const mixerEl = document.getElementById('sound-mixer')
-    if (mixerEl) {
-      mixerEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (shouldScroll) {
+      const mixerEl = document.getElementById('sound-mixer')
+      if (mixerEl) {
+        mixerEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
     }
   }
 
@@ -1498,6 +1690,7 @@ function App() {
         {isMobile ? (
           <MobileHeroView 
             activeDestination={activeDestination}
+            selectDestination={selectDestination}
             DESTINATIONS={DESTINATIONS}
             isPlaying={isPlaying}
             togglePlayback={togglePlayback}
@@ -1992,7 +2185,7 @@ function App() {
               <div
                 key={place.id}
                 className="place-card"
-                onClick={() => selectDestination(index)}
+                onClick={() => selectDestination(index, true)}
               >
                 <img src={place.image} alt={place.title} className="place-card-image" />
                 <div className="place-card-overlay">
