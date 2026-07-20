@@ -2316,9 +2316,56 @@ body {
     inset: 0;
     background-size: cover;
     background-position: center;
-    transform: scale(1.05);
+    transform: scale(1.06);
     z-index: -2;
-    transition: background-image 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0;
+    transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+
+  .mobile-hero-bg.active {
+    opacity: 1;
+    transform: scale(1.0);
+  }
+
+  /* Smooth Touch Content Slider */
+  .mobile-hero-content-slider {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
+    width: 100%;
+    will-change: transform, opacity;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .mobile-hero-content-slider.is-smooth {
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+  }
+
+  .mobile-hero-content-slider.is-dragging {
+    transition: none !important;
+  }
+
+  .mobile-hero-content-slider.out-left {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+
+  .mobile-hero-content-slider.out-right {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+
+  .mobile-hero-content-slider.in-left {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .mobile-hero-content-slider.in-right {
+    transform: translateX(0);
+    opacity: 1;
   }
 
   .mobile-hero-glow {
@@ -2348,121 +2395,91 @@ body {
     z-index: 10;
   }
 
-  /* Mobile Location Swipe Bar & Controls */
-  .mobile-location-swipe-bar {
+  /* Minimalist Location Header */
+  .mobile-location-minimal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    margin-top: 3.8rem;
+    margin-top: 3.5rem;
+    padding: 0 0.5rem;
     z-index: 15;
-    padding: 0.5rem 0.25rem;
-    background: rgba(15, 12, 28, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   }
 
-  .mobile-swipe-arrow {
-    width: 42px;
-    height: 42px;
+  .minimal-arrow {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: var(--c-cream);
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
-    transition: transform 0.2s ease, background 0.2s ease;
+    transition: color 0.2s ease, transform 0.2s ease, background 0.2s ease;
     flex-shrink: 0;
   }
 
-  .mobile-swipe-arrow:active {
-    transform: scale(0.9);
-    background: rgba(255, 255, 255, 0.2);
+  .minimal-arrow:active {
+    transform: scale(0.88);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
   }
 
-  .mobile-location-center-card {
+  .minimal-location-info {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     flex: 1;
-    padding: 0 0.5rem;
   }
 
-  .swipe-badge-hint {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.62rem;
+  .minimal-dest-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+  }
+
+  .minimal-dest-sublocation {
+    font-size: 0.7rem;
+    font-weight: 500;
     letter-spacing: 0.12em;
-    font-weight: 700;
-    color: var(--c-sunset);
-    background: rgba(251, 146, 60, 0.12);
-    border: 1px solid rgba(251, 146, 60, 0.25);
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
     text-transform: uppercase;
-    margin-bottom: 0.35rem;
-  }
-
-  .sparkle-icon {
-    animation: sparkle-spin 3s linear infinite;
-  }
-
-  @keyframes sparkle-spin {
-    0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(180deg) scale(1.2); }
-    100% { transform: rotate(360deg) scale(1); }
-  }
-
-  .mobile-dest-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--c-cream);
-    display: flex;
-    align-items: center;
-    line-height: 1.2;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-  }
-
-  .mobile-dest-sublocation {
-    font-size: 0.72rem;
-    color: var(--c-lavender-bright);
+    color: rgba(255, 255, 255, 0.65);
     margin-top: 0.15rem;
-    opacity: 0.9;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
   }
 
-  /* Swipe Dots Indicator */
-  .mobile-swipe-dots {
+  /* Sleek Minimal Progress Dots */
+  .mobile-minimal-dots {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.45rem;
-    margin-top: 0.75rem;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
     z-index: 15;
   }
 
-  .swipe-dot {
-    width: 8px;
-    height: 8px;
+  .minimal-dot {
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
     border: none;
     padding: 0;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .swipe-dot.active {
-    width: 24px;
-    border-radius: 10px;
-    background: linear-gradient(90deg, var(--c-sunset) 0%, var(--c-lavender-bright) 100%);
-    box-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+  .minimal-dot.active {
+    width: 18px;
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
   }
 
   /* Swipe Animation Feedback */
