@@ -2543,49 +2543,49 @@ body {
     font-weight: 600;
   }
 
-  /* Temperature Block */
-  .mobile-hero-temp-block {
+  /* Minimal Weather Bar Pill */
+  .mobile-minimal-weather-bar {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-top: 2rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    align-self: center;
+    margin-top: 0.75rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 20px;
+    background: rgba(15, 12, 28, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
     z-index: 10;
-    padding-left: 0.5rem;
   }
 
-  .temp-number-row {
-    display: flex;
-    align-items: flex-start;
+  .weather-temp-badge {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
   }
 
-  .temp-number {
-    font-family: var(--font-sans);
-    font-size: 7.5rem;
-    font-weight: 800;
-    line-height: 0.85;
+  .weather-condition {
     color: var(--c-cream);
-    letter-spacing: -0.05em;
-    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    opacity: 0.9;
   }
 
-  .temp-degree-symbol {
-    font-size: 3.5rem;
-    font-weight: 300;
-    color: var(--c-lavender);
-    line-height: 1;
-    margin-left: -2px;
-    margin-top: -12px;
+  .weather-time {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
   }
 
-  .temp-subtitle {
-    font-size: 0.95rem;
-    color: var(--c-text-secondary);
-    margin-top: 0.5rem;
-    font-weight: 500;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  .weather-divider {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.65rem;
   }
 
-  /* Playback Central Circle */
+  /* Playback Central Circle - Glassmorphic Frosted Disc */
   .mobile-hero-playback-section {
     display: flex;
     flex-direction: column;
@@ -2598,8 +2598,8 @@ body {
 
   .mobile-playback-ring-wrapper {
     position: relative;
-    width: 90px;
-    height: 90px;
+    width: 102px;
+    height: 102px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2610,6 +2610,8 @@ body {
     transform: rotate(-90deg);
     pointer-events: none;
     transform-origin: center;
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
   }
 
   .timer-svg.playing {
@@ -2623,53 +2625,42 @@ body {
 
   .timer-ring-bg {
     fill: none;
-    stroke: transparent;
-    stroke-width: 1;
+    stroke: rgba(255, 255, 255, 0.18);
+    stroke-width: 1.5;
   }
 
   .timer-ring-fill {
     fill: none;
-    stroke: #ffffff;
-    stroke-width: 1;
+    stroke-width: 2.5;
     stroke-linecap: round;
     transition: stroke-dashoffset 0.3s ease;
   }
 
-  .timer-svg.playing .timer-ring-fill {
-    animation: breathe-timer-ring 2.5s ease-in-out infinite alternate;
-  }
-
-  @keyframes breathe-timer-ring {
-    0% { opacity: 0.65; }
-    100% { opacity: 1; filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)); }
-  }
-
   .mobile-main-play-btn {
-    width: 68px;
-    height: 68px;
+    width: 76px;
+    height: 76px;
     border-radius: 50%;
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: none !important;
-    color: var(--c-cream) !important;
+    background: rgba(255, 255, 255, 0.14) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    color: #ffffff !important;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: none !important;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 0 15px rgba(255, 255, 255, 0.12) !important;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease !important;
   }
 
   .mobile-main-play-btn:active {
-    transform: scale(0.90);
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.25) !important;
   }
 
   .mobile-main-play-btn.playing {
-    background: transparent !important;
-    color: var(--c-cream) !important;
-    border: none !important;
-    box-shadow: none !important;
+    background: rgba(255, 255, 255, 0.18) !important;
+    color: #ffffff !important;
   }
 
   .mobile-active-track-name {
@@ -2866,35 +2857,225 @@ body {
     100% { transform: translateX(-100px) translateY(0); }
   }
 
-  /* Weather overlays */
-  .mobile-rain-overlay {
+  /* Minimal Canopy Rain Animation */
+  .minimal-canopy-rain {
     position: absolute;
     inset: 0;
-    z-index: -1;
     pointer-events: none;
-    background-image: linear-gradient(170deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.06) 100%),
-                      radial-gradient(ellipse at top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 100%);
-    opacity: 0.6;
-    animation: rain-fall-mob 0.6s linear infinite;
+    z-index: 4;
+    overflow: hidden;
   }
 
-  @keyframes rain-fall-mob {
-    0% { background-position: 0 0; }
-    100% { background-position: 30px 400px; }
+  .minimal-canopy-rain .rain-drop {
+    position: absolute;
+    top: -40px;
+    width: 1.5px;
+    height: 32px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.45) 60%, rgba(255, 255, 255, 0.8) 100%);
+    border-radius: 2px;
+    opacity: 0.75;
+    animation: minimal-rain-fall 1.2s linear infinite;
   }
 
-  .mobile-snow-overlay {
+  .minimal-canopy-rain .r1 { left: 12%; animation-delay: 0s; height: 28px; }
+  .minimal-canopy-rain .r2 { left: 34%; animation-delay: 0.4s; height: 38px; width: 1px; opacity: 0.5; }
+  .minimal-canopy-rain .r3 { left: 56%; animation-delay: 0.8s; height: 30px; }
+  .minimal-canopy-rain .r4 { left: 74%; animation-delay: 0.2s; height: 35px; width: 1px; opacity: 0.6; }
+  .minimal-canopy-rain .r5 { left: 88%; animation-delay: 0.6s; height: 25px; }
+  .minimal-canopy-rain .r6 { left: 44%; animation-delay: 1.0s; height: 32px; opacity: 0.55; }
+
+  @keyframes minimal-rain-fall {
+    0% { transform: translateY(0) skewX(-6deg); opacity: 0; }
+    15% { opacity: 0.75; }
+    85% { opacity: 0.75; }
+    100% { transform: translateY(calc(100vh + 50px)) skewX(-6deg); opacity: 0; }
+  }
+
+  /* Motion Designer Animations for Ancient Forest Sounds */
+
+  /* 2. Leaf Drips */
+  .forest-drips-layer {
     position: absolute;
     inset: 0;
-    z-index: -1;
     pointer-events: none;
-    background-image: radial-gradient(circle at center, rgba(255,255,255,0.08) 2px, transparent 3px);
-    background-size: 24px 24px;
-    animation: snow-fall-mob 10s linear infinite;
+    z-index: 4;
+  }
+  .forest-drips-layer .drip {
+    position: absolute;
+    width: 6px;
+    height: 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(56,189,248,0.9));
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    animation: drip-drop 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .forest-drips-layer .d1 { top: 22%; left: 18%; animation-delay: 0s; }
+  .forest-drips-layer .d2 { top: 35%; left: 75%; animation-delay: 0.8s; }
+  .forest-drips-layer .d3 { top: 60%; left: 28%; animation-delay: 1.5s; }
+
+  @keyframes drip-drop {
+    0% { transform: translateY(0) scaleY(1); opacity: 0; }
+    20% { opacity: 0.9; }
+    80% { transform: translateY(120px) scaleY(1.4); opacity: 0.8; }
+    100% { transform: translateY(140px) scaleY(0.4); opacity: 0; }
   }
 
-  @keyframes snow-fall-mob {
-    0% { background-position: 0 0; }
-    100% { background-position: 50px 300px; }
+  /* 3. Waterfall Mist Shimmer */
+  .forest-waterfall-mist {
+    position: absolute;
+    bottom: 30%;
+    right: 35%;
+    width: 140px;
+    height: 180px;
+    pointer-events: none;
+    z-index: 4;
+    overflow: hidden;
+  }
+  .mist-stream {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 70%);
+    animation: mist-rise 4s ease-in-out infinite alternate;
+    filter: blur(12px);
+  }
+  .ms2 { animation-delay: 2s; opacity: 0.6; }
+
+  @keyframes mist-rise {
+    0% { transform: translateY(20px) scale(0.9); opacity: 0.2; }
+    100% { transform: translateY(-30px) scale(1.15); opacity: 0.6; }
+  }
+
+  /* 4. Tree Frogs Ribbit Glow */
+  .forest-frogs-pulse {
+    position: absolute;
+    bottom: 12%;
+    left: 14%;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .frog-glow {
+    position: absolute;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid rgba(74, 222, 128, 0.6);
+    box-shadow: 0 0 15px rgba(74, 222, 128, 0.4);
+    animation: frog-ripple 2.5s ease-out infinite;
+  }
+  .fg2 { animation-delay: 1.25s; left: 160px; bottom: 20px; }
+
+  @keyframes frog-ripple {
+    0% { transform: scale(0.3); opacity: 0.9; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+
+  /* 5. Cicadas Sparkle Shimmer */
+  .forest-cicadas-sparkle {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+  }
+  .forest-cicadas-sparkle .sparkle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #facc15;
+    box-shadow: 0 0 8px #facc15;
+    animation: cicada-twinkle 1.8s ease-in-out infinite alternate;
+  }
+  .sp1 { top: 40%; left: 82%; animation-delay: 0.2s; }
+  .sp2 { top: 68%; left: 88%; animation-delay: 0.9s; }
+  .sp3 { top: 25%; left: 45%; animation-delay: 1.4s; }
+
+  @keyframes cicada-twinkle {
+    0% { transform: scale(0.6); opacity: 0.2; }
+    100% { transform: scale(1.6); opacity: 1; filter: drop-shadow(0 0 6px #facc15); }
+  }
+
+  /* 6. Macaw Flight */
+  .forest-macaw-flight {
+    position: absolute;
+    top: 18%;
+    left: -60px;
+    pointer-events: none;
+    z-index: 5;
+    animation: macaw-soar 14s linear infinite;
+  }
+
+  @keyframes macaw-soar {
+    0% { transform: translateX(0) translateY(0) rotate(5deg); opacity: 0; }
+    10% { opacity: 0.9; }
+    90% { opacity: 0.9; }
+    100% { transform: translateX(calc(100vw + 120px)) translateY(-40px) rotate(-3deg); opacity: 0; }
+  }
+
+  /* 7. Jungle Breeze Sway */
+  .forest-breeze-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    overflow: hidden;
+  }
+  .breeze-wave {
+    position: absolute;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+    animation: breeze-sweep 8s linear infinite;
+  }
+  .bw2 { animation-delay: 4s; opacity: 0.5; }
+
+  @keyframes breeze-sweep {
+    0% { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(100%) skewX(-15deg); }
+  }
+
+  /* 8. Howler Calls Echo */
+  .forest-howler-echo {
+    position: absolute;
+    top: 14%;
+    right: 12%;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .echo-ring {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(251, 146, 60, 0.7);
+    animation: echo-expand 3s ease-out infinite;
+  }
+  .er2 { animation-delay: 1.5s; }
+
+  @keyframes echo-expand {
+    0% { transform: scale(0.2); opacity: 0.8; }
+    100% { transform: scale(2.8); opacity: 0; }
+  }
+
+  /* 10. Marimba Tones Pulse */
+  .forest-marimba-pulse {
+    position: absolute;
+    bottom: 22%;
+    left: 28%;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .marimba-ring {
+    position: absolute;
+    width: 50px;
+    height: 25px;
+    border-radius: 50%;
+    border: 2px solid rgba(251, 191, 36, 0.65);
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+    animation: marimba-ripple 2.2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+  }
+  .mr2 { animation-delay: 1.1s; }
+
+  @keyframes marimba-ripple {
+    0% { transform: scale(0.4) rotate(-10deg); opacity: 0.9; }
+    100% { transform: scale(2.4) rotate(-10deg); opacity: 0; }
   }
 }
