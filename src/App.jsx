@@ -2340,79 +2340,81 @@ function App() {
             </p>
           </div>
 
-          <div className="features-grid">
-            <div className="glass-card feature-card">
-              <div className="feature-glow-overlay" />
-              <div className="feature-icon-box">
-                <CloudRain size={24} />
+          {!isMobile && (
+            <div className="features-grid">
+              <div className="glass-card feature-card">
+                <div className="feature-glow-overlay" />
+                <div className="feature-icon-box">
+                  <CloudRain size={24} />
+                </div>
+                <h3>Immersive Rain</h3>
+                <p>Soft forest mist, torrential roof storms, and puddle splatters recorded in high-fidelity stereo.</p>
               </div>
-              <h3>Immersive Rain</h3>
-              <p>Soft forest mist, torrential roof storms, and puddle splatters recorded in high-fidelity stereo.</p>
-            </div>
 
-            <div className="glass-card feature-card">
-              <div className="feature-glow-overlay" />
-              <div className="feature-icon-box">
-                <Wind size={24} />
+              <div className="glass-card feature-card">
+                <div className="feature-glow-overlay" />
+                <div className="feature-icon-box">
+                  <Wind size={24} />
+                </div>
+                <h3>Whispering Wind</h3>
+                <p>Alpine drafts, sea breezes, and autumnal canopy sweeps that clear mental static.</p>
               </div>
-              <h3>Whispering Wind</h3>
-              <p>Alpine drafts, sea breezes, and autumnal canopy sweeps that clear mental static.</p>
-            </div>
 
-            <div className="glass-card feature-card">
-              <div className="feature-glow-overlay" />
-              <div className="feature-icon-box">
-                <Zap size={24} />
+              <div className="glass-card feature-card">
+                <div className="feature-glow-overlay" />
+                <div className="feature-icon-box">
+                  <Zap size={24} />
+                </div>
+                <h3>Distant Thunder</h3>
+                <p>Deep rumbling storms that sound realistic, wrapping you in security and peace.</p>
               </div>
-              <h3>Distant Thunder</h3>
-              <p>Deep rumbling storms that sound realistic, wrapping you in security and peace.</p>
-            </div>
 
-            <div className="glass-card feature-card">
-              <div className="feature-glow-overlay" />
-              <div className="feature-icon-box">
-                <Flame size={24} />
+              <div className="glass-card feature-card">
+                <div className="feature-glow-overlay" />
+                <div className="feature-icon-box">
+                  <Flame size={24} />
+                </div>
+                <h3>Warm Campfire</h3>
+                <p>Hear pine log crackling, warm heat waves, and the subtle outdoor hum of old woodlands.</p>
               </div>
-              <h3>Warm Campfire</h3>
-              <p>Hear pine log crackling, warm heat waves, and the subtle outdoor hum of old woodlands.</p>
-            </div>
 
-            <div className="glass-card feature-card">
-              <div className="feature-glow-overlay" />
-              <div className="feature-icon-box">
-                <Droplet size={24} />
+              <div className="glass-card feature-card">
+                <div className="feature-glow-overlay" />
+                <div className="feature-icon-box">
+                  <Droplet size={24} />
+                </div>
+                <h3>Rolling Ocean</h3>
+                <p>Slow ocean surges breaking over pebbles, recorded at sunrise in deep coastal locations.</p>
               </div>
-              <h3>Rolling Ocean</h3>
-              <p>Slow ocean surges breaking over pebbles, recorded at sunrise in deep coastal locations.</p>
-            </div>
 
-            <div className="glass-card feature-card">
-              <div className="feature-glow-overlay" />
-              <div className="feature-icon-box">
-                <BirdIcon size={24} />
+              <div className="glass-card feature-card">
+                <div className="feature-glow-overlay" />
+                <div className="feature-icon-box">
+                  <BirdIcon size={24} />
+                </div>
+                <h3>Forest Birds</h3>
+                <p>Dawn chorus birds and remote tropical wildlife calls that ground your mind instantly.</p>
               </div>
-              <h3>Forest Birds</h3>
-              <p>Dawn chorus birds and remote tropical wildlife calls that ground your mind instantly.</p>
-            </div>
 
-            <div className="glass-card feature-card">
-              <div className="feature-glow-overlay" />
-              <div className="feature-icon-box">
-                <Snowflake size={24} />
+              <div className="glass-card feature-card">
+                <div className="feature-glow-overlay" />
+                <div className="feature-icon-box">
+                  <Snowflake size={24} />
+                </div>
+                <h3>Soft Snow</h3>
+                <p>Subtle winter winds and walking snow crunches that evoke absolute quietude.</p>
               </div>
-              <h3>Soft Snow</h3>
-              <p>Subtle winter winds and walking snow crunches that evoke absolute quietude.</p>
-            </div>
 
-            <div className="glass-card feature-card">
-              <div className="feature-glow-overlay" />
-              <div className="feature-icon-box">
-                <Music size={24} />
+              <div className="glass-card feature-card">
+                <div className="feature-glow-overlay" />
+                <div className="feature-icon-box">
+                  <Music size={24} />
+                </div>
+                <h3>Calming Music</h3>
+                <p>Ambient synths, harp strings, and chill acoustic lofi to block distractions.</p>
               </div>
-              <h3>Calming Music</h3>
-              <p>Ambient synths, harp strings, and chill acoustic lofi to block distractions.</p>
             </div>
-          </div>
+          )}
         </section>
 
         {/* 4. Interactive Sound Mixer Section */}
@@ -2425,134 +2427,168 @@ function App() {
             </p>
           </div>
 
-          <div className="mixer-wrapper">
-            <div className="glass-card mixer-dashboard">
-              <div className="mixer-header-row">
-                <span style={{ fontSize: '0.9rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--c-lavender)' }}>
-                  Active Audio Output
-                </span>
-                
-                {/* Playing status toggle */}
-                <button
-                  className="btn btn-secondary"
-                  onClick={togglePlayback}
-                  style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem' }}
-                >
-                  {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-                  <span>{isPlaying ? 'Pause Experience' : 'Test Sound'}</span>
-                </button>
-              </div>
+          {!isMobile && (
+            <div className="mixer-wrapper">
+              <div className="glass-card mixer-dashboard">
+                <div className="mixer-header-row">
+                  <span style={{ fontSize: '0.9rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--c-lavender)' }}>
+                    Active Audio Output
+                  </span>
+                  
+                  {/* Playing status toggle */}
+                  <button
+                    className="btn btn-secondary"
+                    onClick={togglePlayback}
+                    style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem' }}
+                  >
+                    {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+                    <span>{isPlaying ? 'Pause Experience' : 'Test Sound'}</span>
+                  </button>
+                </div>
 
-              {/* Dynamic waveform visualizer */}
-              <div className="mixer-visualizer-box">
-                {Array.from({ length: 28 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`mixer-waveform-bar ${isPlaying && activeSounds.length > 0 ? 'active' : ''}`}
-                    style={{
-                      animationDelay: `${i * 0.05}s`,
-                      animationDuration: `${0.8 + Math.random()}s`,
-                      height: isPlaying && activeSounds.length > 0 ? undefined : '6px'
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Sound toggler chips grid */}
-              <div className="sound-chips-grid">
-                {getMixSounds(activeDestination).map((sound) => {
-                  const isActive = activeSounds.includes(sound.id)
-                  return (
+                {/* Dynamic waveform visualizer */}
+                <div className="mixer-visualizer-box">
+                  {Array.from({ length: 28 }).map((_, i) => (
                     <div
-                      key={sound.id}
-                      className={`sound-chip ${isActive ? 'active' : ''}`}
-                      onClick={() => toggleSound(sound.id)}
-                    >
-                      <div className="ripple-wave-effect" />
-                      <div className="sound-chip-icon">
-                        <sound.icon size={20} />
-                      </div>
-                      <span className="sound-chip-title">{sound.name}</span>
-                    </div>
-                  )
-                })}
-              </div>
+                      key={i}
+                      className={`mixer-waveform-bar ${isPlaying && activeSounds.length > 0 ? 'active' : ''}`}
+                      style={{
+                        animationDelay: `${i * 0.05}s`,
+                        animationDuration: `${0.8 + Math.random()}s`,
+                        height: isPlaying && activeSounds.length > 0 ? undefined : '6px'
+                      }}
+                    />
+                  ))}
+                </div>
 
-              {/* Active Sound Volume Sliders List */}
-              {activeSounds.length > 0 ? (
-                <div className="mixer-sliders-list">
-                  {activeSounds.map((soundId) => {
-                    const soundItem = getMixSounds(activeDestination).find((s) => s.id === soundId)
-                    if (!soundItem) return null
+                {/* Sound toggler chips grid */}
+                <div className="sound-chips-grid">
+                  {getMixSounds(activeDestination).map((sound) => {
+                    const isActive = activeSounds.includes(sound.id)
                     return (
-                      <div key={soundId} className="mixer-slider-item">
-                        <div className="slider-info">
-                          <soundItem.icon size={18} style={{ color: soundItem.color }} />
-                          <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{soundItem.name}</span>
+                      <div
+                        key={sound.id}
+                        className={`sound-chip ${isActive ? 'active' : ''}`}
+                        onClick={() => toggleSound(sound.id)}
+                      >
+                        <div className="ripple-wave-effect" />
+                        <div className="sound-chip-icon">
+                          <sound.icon size={20} />
                         </div>
-                        <div className="slider-bar-wrapper">
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={soundVolumes[soundId] || 50}
-                            onChange={(e) => handleVolumeChange(soundId, Number(e.target.value))}
-                            className="mixer-volume-slider"
-                            style={{
-                              background: `linear-gradient(to right, ${soundItem.color} 0%, ${soundItem.color} ${soundVolumes[soundId]}%, rgba(255,255,255,0.1) ${soundVolumes[soundId]}%, rgba(255,255,255,0.1) 100%)`
-                            }}
-                            aria-label={`Volume for ${soundItem.name}`}
-                          />
-                        </div>
-                        <span style={{ fontSize: '0.85rem', width: '35px', textAlign: 'right', color: 'var(--c-text-secondary)' }}>
-                          {soundVolumes[soundId]}%
-                        </span>
+                        <span className="sound-chip-title">{sound.name}</span>
                       </div>
                     )
                   })}
                 </div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--c-text-secondary)' }}>
-                  <WifiOff size={32} style={{ marginBottom: '0.75rem', opacity: 0.6 }} />
-                  <p>All sounds are muted. Select a chip above to build a mix.</p>
-                </div>
-              )}
-            </div>
 
-            {/* Mixer Presets Sidebar */}
-            <div className="mixer-sidebar">
-              <div className="glass-card mixer-preset-card">
-                <h3>Recommended Mixes</h3>
-                <p style={{ fontSize: '0.9rem', color: 'var(--c-text-secondary)', marginBottom: '2rem' }}>
-                  Quickly switch between pre-compiled ambient ratios curated by our team.
-                </p>
-                <div className="preset-pills">
-                  {PRESET_MIXES.map((preset) => (
-                    <button
-                      key={preset.id}
-                      className={`preset-pill ${activePreset === preset.id ? 'active' : ''}`}
-                      onClick={() => applyPreset(preset)}
-                    >
-                      {preset.name}
-                    </button>
-                  ))}
-                </div>
+                {/* Active Sound Volume Sliders List */}
+                {activeSounds.length > 0 ? (
+                  <div className="mixer-sliders-list">
+                    {activeSounds.map((soundId) => {
+                      const soundItem = getMixSounds(activeDestination).find((s) => s.id === soundId)
+                      if (!soundItem) return null
+                      return (
+                        <div key={soundId} className="mixer-slider-item">
+                          <div className="slider-info">
+                            <soundItem.icon size={18} style={{ color: soundItem.color }} />
+                            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{soundItem.name}</span>
+                          </div>
+                          <div className="slider-bar-wrapper">
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={soundVolumes[soundId] || 50}
+                              onChange={(e) => handleVolumeChange(soundId, Number(e.target.value))}
+                              className="mixer-volume-slider"
+                              style={{
+                                background: `linear-gradient(to right, ${soundItem.color} 0%, ${soundItem.color} ${soundVolumes[soundId]}%, rgba(255,255,255,0.1) ${soundVolumes[soundId]}%, rgba(255,255,255,0.1) 100%)`
+                              }}
+                              aria-label={`Volume for ${soundItem.name}`}
+                            />
+                          </div>
+                          <span style={{ fontSize: '0.85rem', width: '35px', textAlign: 'right', color: 'var(--c-text-secondary)' }}>
+                            {soundVolumes[soundId]}%
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--c-text-secondary)' }}>
+                    <WifiOff size={32} style={{ marginBottom: '0.75rem', opacity: 0.6 }} />
+                    <p>All sounds are muted. Select a chip above to build a mix.</p>
+                  </div>
+                )}
               </div>
 
-              <div className="glass-card mixer-preset-card" style={{ background: 'linear-gradient(135deg, rgba(192, 132, 252, 0.05) 0%, rgba(67, 56, 202, 0.05) 100%)' }}>
-                <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                  <Sparkles size={18} style={{ color: 'var(--c-sunset)' }} />
-                  <span>Ambient Science</span>
-                </h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--c-text-secondary)', lineHeight: '1.6' }}>
-                  Zephyr utilizes brownian sound waves, calibrated frequencies, and dynamic environmental delays that mimic actual spatial sound horizons.
-                </p>
+              {/* Mixer Presets Sidebar */}
+              <div className="mixer-sidebar">
+                <div className="glass-card mixer-preset-card">
+                  <h3>Recommended Mixes</h3>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--c-text-secondary)', marginBottom: '2rem' }}>
+                    Quickly switch between pre-compiled ambient ratios curated by our team.
+                  </p>
+                  <div className="preset-pills">
+                    {PRESET_MIXES.map((preset) => (
+                      <button
+                        key={preset.id}
+                        className={`preset-pill ${activePreset === preset.id ? 'active' : ''}`}
+                        onClick={() => applyPreset(preset)}
+                      >
+                        {preset.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="glass-card mixer-preset-card" style={{ background: 'linear-gradient(135deg, rgba(192, 132, 252, 0.05) 0%, rgba(67, 56, 202, 0.05) 100%)' }}>
+                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                    <Sparkles size={18} style={{ color: 'var(--c-sunset)' }} />
+                    <span>Ambient Science</span>
+                  </h4>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--c-text-secondary)', lineHeight: '1.6' }}>
+                    Zephyr utilizes brownian sound waves, calibrated frequencies, and dynamic environmental delays that mimic actual spatial sound horizons.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </section>
 
-        {/* 5. Explore Beautiful Places (Destination Cards) */}
+        {/* 5. Personalized Scenarios Bento Grid - Atmospheres */}
+        <section className="section" id="personalized">
+          <div className="section-header">
+            <span className="section-tag">Atmospheres</span>
+            <h2 className="section-title">Designed for your lifestyle.</h2>
+            <p className="section-desc">
+              Whether you are locking down deep work focus, meditating at sunrise, or reading a novel, discover a tailored acoustic backdrop.
+            </p>
+          </div>
+
+          {!isMobile && (
+            <div className="bento-grid">
+              {SCENARIOS.map((card) => (
+                <div
+                  key={card.id}
+                  className={`glass-card bento-card ${card.size}`}
+                  onClick={() => showToast(`Calibrating profile for: ${card.title}`)}
+                >
+                  {/* Background lighting shapes */}
+                  <div className={`bento-bg-shape ${card.color}`} />
+                  
+                  <div className="bento-icon-wrapper">
+                    <card.icon size={22} />
+                  </div>
+                  <h3>{card.title}</h3>
+                  <p>{card.desc}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* 6. Explore Beautiful Places (Destination Cards) */}
         <section className="section" id="destinations">
           <div className="section-header" style={{ textAlign: 'left', maxWidth: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '2rem' }}>
             <div>
@@ -2591,36 +2627,6 @@ function App() {
                     ))}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 6. Personalized Scenarios Bento Grid */}
-        <section className="section" id="personalized">
-          <div className="section-header">
-            <span className="section-tag">Atmospheres</span>
-            <h2 className="section-title">Designed for your lifestyle.</h2>
-            <p className="section-desc">
-              Whether you are locking down deep work focus, meditating at sunrise, or reading a novel, discover a tailored acoustic backdrop.
-            </p>
-          </div>
-
-          <div className="bento-grid">
-            {SCENARIOS.map((card) => (
-              <div
-                key={card.id}
-                className={`glass-card bento-card ${card.size}`}
-                onClick={() => showToast(`Calibrating profile for: ${card.title}`)}
-              >
-                {/* Background lighting shapes */}
-                <div className={`bento-bg-shape ${card.color}`} />
-                
-                <div className="bento-icon-wrapper">
-                  <card.icon size={22} />
-                </div>
-                <h3>{card.title}</h3>
-                <p>{card.desc}</p>
               </div>
             ))}
           </div>
