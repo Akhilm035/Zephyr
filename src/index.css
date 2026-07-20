@@ -3078,4 +3078,24 @@ body {
     0% { transform: scale(0.4) rotate(-10deg); opacity: 0.9; }
     100% { transform: scale(2.4) rotate(-10deg); opacity: 0; }
   }
+
+  /* Hide sub-contents under Pure Serenity, Interactive Preview, and Atmospheres on mobile */
+  #why-love .features-grid,
+  #sound-mixer .mixer-wrapper,
+  #personalized .bento-grid {
+    display: none !important;
+  }
+
+  /* Equal uniform spacing between Pure Serenity, Interactive Preview, and Atmospheres on mobile */
+  #why-love,
+  #sound-mixer,
+  #personalized {
+    padding: 3rem 1.5rem !important;
+  }
+
+  #why-love .section-header,
+  #sound-mixer .section-header,
+  #personalized .section-header {
+    margin-bottom: 0 !important;
+  }
 }
