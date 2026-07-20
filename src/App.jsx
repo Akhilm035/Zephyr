@@ -955,10 +955,6 @@ function MobileHeroView({
         </button>
 
         <div className="mobile-location-center-card">
-          <div className="swipe-badge-hint">
-            <Sparkles size={11} className="sparkle-icon" />
-            <span>SWIPE LOCATION SOUNDS ({activeDestination + 1}/{DESTINATIONS.length})</span>
-          </div>
           <h2 className="mobile-dest-title">
             <MapPin size={16} style={{ color: 'var(--c-sunset)', marginRight: '6px' }} />
             {dest.title}
@@ -1029,21 +1025,11 @@ function MobileHeroView({
             {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />}
           </button>
         </div>
-
-        <div className="mobile-active-track-name">
-          <span className="pulse-dot" />
-          <span>{dest.title} Soundscape</span>
-        </div>
       </div>
 
       {/* Glassmorphic Sound Drawer Sheet */}
       <div className="mobile-sound-drawer-sheet">
         <div className="drawer-handle" />
-        
-        <div className="drawer-header">
-          <span className="drawer-title">{dest.title} Ambient Layering</span>
-          <span className="drawer-desc">Tap to toggle or adjust volume sliders for {dest.location}</span>
-        </div>
 
         <div className="drawer-scroll-container">
           {getMixSounds(activeDestination).map((sound) => {
