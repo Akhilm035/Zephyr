@@ -709,6 +709,254 @@ class AmbientSynthEngine {
       };
       playBells();
     }
+    else if (soundId === 'canopy_rain') {
+      this.start('rain', volume);
+      return;
+    }
+    else if (soundId === 'jungle_breeze') {
+      this.start('wind', volume);
+      return;
+    }
+    else if (soundId === 'leaf_drips') {
+      const playDrips = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        const baseFreq = 800 + Math.random() * 800;
+        osc.frequency.setValueAtTime(baseFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, now + 0.04);
+
+        const dripGain = this.ctx.createGain();
+        dripGain.gain.setValueAtTime(0, now);
+        dripGain.gain.linearRampToValueAtTime(0.25, now + 0.005);
+        dripGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+        osc.connect(dripGain);
+        dripGain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.06);
+
+        const nextTime = 250 + Math.random() * 850;
+        this.leafDripsTimeout = setTimeout(playDrips, nextTime);
+      };
+      playDrips();
+    }
+    else if (soundId === 'waterfall') {
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const lowpass = this.ctx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 500;
+
+      noise.connect(lowpass);
+      lowpass.connect(gainNode);
+      noise.start();
+      sourceNodes.push(noise);
+    }
+    else if (soundId === 'tree_frogs') {
+      const playFrogs = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const count = 2 + Math.floor(Math.random() * 3);
+        const pitch = 1800 + Math.random() * 400;
+
+        for (let i = 0; i < count; i++) {
+          const t = now + i * 0.12;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(pitch, t);
+          osc.frequency.linearRampToValueAtTime(pitch + 150, t + 0.05);
+
+          const frogGain = this.ctx.createGain();
+          frogGain.gain.setValueAtTime(0, t);
+          frogGain.gain.linearRampToValueAtTime(0.18, t + 0.01);
+          frogGain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+
+          osc.connect(frogGain);
+          frogGain.connect(gainNode);
+          osc.start(t);
+          osc.stop(t + 0.1);
+        }
+
+        const nextTime = 1500 + Math.random() * 2500;
+        this.treeFrogsTimeout = setTimeout(playFrogs, nextTime);
+      };
+      playFrogs();
+    }
+    else if (soundId === 'cicadas') {
+      const playCicadaPulse = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(4800 + Math.random() * 400, now);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 4000;
+
+        const cGain = this.ctx.createGain();
+        cGain.gain.setValueAtTime(0, now);
+        cGain.gain.linearRampToValueAtTime(0.08, now + 0.05);
+        cGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+        osc.connect(filter);
+        filter.connect(cGain);
+        cGain.connect(gainNode);
+
+        osc.start(now);
+        osc.stop(now + 0.85);
+
+        const nextTime = 800 + Math.random() * 1200;
+        this.cicadasTimeout = setTimeout(playCicadaPulse, nextTime);
+      };
+      playCicadaPulse();
+    }
+    else if (soundId === 'macaw_calls') {
+      const playMacaw = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(2200, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1800, now);
+        filter.Q.value = 2.0;
+
+        const callGain = this.ctx.createGain();
+        callGain.gain.setValueAtTime(0, now);
+        callGain.gain.linearRampToValueAtTime(0.12, now + 0.02);
+        callGain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+
+        osc.connect(filter);
+        filter.connect(callGain);
+        callGain.connect(gainNode);
+
+        osc.start(now);
+        osc.stop(now + 0.35);
+
+        const nextTime = 8000 + Math.random() * 12000;
+        this.macawTimeout = setTimeout(playMacaw, nextTime);
+      };
+      playMacaw();
+    }
+    else if (soundId === 'howler_calls') {
+      const playHowler = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.linearRampToValueAtTime(320, now + 0.6);
+        osc.frequency.linearRampToValueAtTime(150, now + 1.2);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 450;
+
+        const hGain = this.ctx.createGain();
+        hGain.gain.setValueAtTime(0, now);
+        hGain.gain.linearRampToValueAtTime(0.2, now + 0.2);
+        hGain.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
+
+        osc.connect(filter);
+        filter.connect(hGain);
+        hGain.connect(gainNode);
+
+        osc.start(now);
+        osc.stop(now + 1.3);
+
+        const nextTime = 12000 + Math.random() * 18000;
+        this.howlerTimeout = setTimeout(playHowler, nextTime);
+      };
+      playHowler();
+    }
+    else if (soundId === 'bamboo_flute') {
+      const scale = [293.66, 329.63, 392.00, 440.00, 523.25, 587.33];
+      const playFlute = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        const freq = scale[Math.floor(Math.random() * scale.length)];
+        osc.frequency.setValueAtTime(freq, now);
+
+        const vib = this.ctx.createOscillator();
+        vib.frequency.value = 4.8;
+        const vibGain = this.ctx.createGain();
+        vibGain.gain.value = 2.5;
+        vib.connect(vibGain);
+        vibGain.connect(osc.frequency);
+
+        const fGain = this.ctx.createGain();
+        fGain.gain.setValueAtTime(0, now);
+        fGain.gain.linearRampToValueAtTime(0.25, now + 0.3);
+        fGain.gain.setValueAtTime(0.25, now + 1.8);
+        fGain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+
+        osc.connect(fGain);
+        fGain.connect(gainNode);
+
+        osc.start(now);
+        vib.start(now);
+        osc.stop(now + 2.6);
+        vib.stop(now + 2.6);
+
+        const nextTime = 3000 + Math.random() * 4000;
+        this.bambooFluteTimeout = setTimeout(playFlute, nextTime);
+      };
+      playFlute();
+    }
+    else if (soundId === 'marimba_tones') {
+      const scale = [196.00, 220.00, 261.63, 293.66, 329.63, 392.00];
+      const playMarimba = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const freq = scale[Math.floor(Math.random() * scale.length)];
+        
+        const osc1 = this.ctx.createOscillator();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(freq, now);
+
+        const osc2 = this.ctx.createOscillator();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(freq * 3.0, now);
+
+        const mGain = this.ctx.createGain();
+        mGain.gain.setValueAtTime(0, now);
+        mGain.gain.linearRampToValueAtTime(0.3, now + 0.008);
+        mGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+
+        const overtoneGain = this.ctx.createGain();
+        overtoneGain.gain.value = 0.15;
+
+        osc1.connect(mGain);
+        osc2.connect(overtoneGain);
+        overtoneGain.connect(mGain);
+        mGain.connect(gainNode);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.75);
+        osc2.stop(now + 0.75);
+
+        const nextTime = 800 + Math.random() * 2000;
+        this.marimbaTimeout = setTimeout(playMarimba, nextTime);
+      };
+      playMarimba();
+    }
     else if (soundId === 'falcon') {
       const playFalcon = () => {
         if (!this.gains[soundId]) return;
@@ -739,6 +987,15 @@ class AmbientSynthEngine {
   }
 
   stop(soundId) {
+    if (soundId === 'canopy_rain') this.stop('rain');
+    if (soundId === 'jungle_breeze') this.stop('wind');
+    if (soundId === 'leaf_drips') clearTimeout(this.leafDripsTimeout);
+    if (soundId === 'tree_frogs') clearTimeout(this.treeFrogsTimeout);
+    if (soundId === 'cicadas') clearTimeout(this.cicadasTimeout);
+    if (soundId === 'macaw_calls') clearTimeout(this.macawTimeout);
+    if (soundId === 'howler_calls') clearTimeout(this.howlerTimeout);
+    if (soundId === 'bamboo_flute') clearTimeout(this.bambooFluteTimeout);
+    if (soundId === 'marimba_tones') clearTimeout(this.marimbaTimeout);
     if (soundId === 'thunder') clearTimeout(this.thunderTimeout);
     if (soundId === 'fire' || soundId === 'campfire') {
       clearTimeout(this.fireTimeout);
@@ -938,8 +1195,102 @@ function MobileHeroView({
         </>
       )}
       
-      {/* Rain animation overlay */}
-      {isPlaying && activeSounds.includes('rain') && (
+      {/* Ancient Forest Motion Designer Sound Animations */}
+      {activeDestination === 0 && (
+        <>
+          {/* 1. Minimal Canopy Rain */}
+          {(activeSounds.includes('canopy_rain') || activeSounds.includes('rain')) && isPlaying && (
+            <div className="minimal-canopy-rain">
+              <span className="rain-drop r1" />
+              <span className="rain-drop r2" />
+              <span className="rain-drop r3" />
+              <span className="rain-drop r4" />
+              <span className="rain-drop r5" />
+              <span className="rain-drop r6" />
+            </div>
+          )}
+
+          {/* 2. Leaf Drips */}
+          {activeSounds.includes('leaf_drips') && isPlaying && (
+            <div className="forest-drips-layer">
+              <span className="drip d1" />
+              <span className="drip d2" />
+              <span className="drip d3" />
+            </div>
+          )}
+
+          {/* 3. Waterfall Mist Shimmer */}
+          {activeSounds.includes('waterfall') && isPlaying && (
+            <div className="forest-waterfall-mist">
+              <span className="mist-stream ms1" />
+              <span className="mist-stream ms2" />
+            </div>
+          )}
+
+          {/* 4. Tree Frogs Ripple Glow */}
+          {activeSounds.includes('tree_frogs') && isPlaying && (
+            <div className="forest-frogs-pulse">
+              <span className="frog-glow fg1" />
+              <span className="frog-glow fg2" />
+            </div>
+          )}
+
+          {/* 5. Cicadas Sparkle Shimmer */}
+          {activeSounds.includes('cicadas') && isPlaying && (
+            <div className="forest-cicadas-sparkle">
+              <span className="sparkle sp1" />
+              <span className="sparkle sp2" />
+              <span className="sparkle sp3" />
+            </div>
+          )}
+
+          {/* 6. Macaw Calls Flight */}
+          {activeSounds.includes('macaw_calls') && isPlaying && (
+            <div className="forest-macaw-flight">
+              <svg viewBox="0 0 60 30" fill="#ef4444" style={{ width: '45px', height: '22px' }}>
+                <path d="M10,15 Q25,2 40,15 Q55,2 58,12 Q45,20 30,17 Q15,20 10,15 Z" />
+              </svg>
+            </div>
+          )}
+
+          {/* 7. Jungle Breeze Sway */}
+          {activeSounds.includes('jungle_breeze') && isPlaying && (
+            <div className="forest-breeze-overlay">
+              <div className="breeze-wave bw1" />
+              <div className="breeze-wave bw2" />
+            </div>
+          )}
+
+          {/* 8. Howler Calls Echo Rings */}
+          {activeSounds.includes('howler_calls') && isPlaying && (
+            <div className="forest-howler-echo">
+              <span className="echo-ring er1" />
+              <span className="echo-ring er2" />
+            </div>
+          )}
+
+          {/* 9. Bamboo Flute Floating Musical Notes */}
+          {activeSounds.includes('bamboo_flute') && isPlaying && (
+            <div className="dunes-music-notes-overlay">
+              <div className="music-note n-1">♪</div>
+              <div className="music-note n-2">♫</div>
+              <div className="music-note n-3">♩</div>
+              <div className="music-note n-4">♬</div>
+            </div>
+          )}
+
+          {/* 10. Marimba Tones Resonance Pulse */}
+          {activeSounds.includes('marimba_tones') && isPlaying && (
+            <div className="forest-marimba-pulse">
+              <span className="marimba-ring mr1" />
+              <span className="marimba-ring mr2" />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Rain animation overlay fallback */}
+      {isPlaying && activeSounds.includes('rain') && activeDestination !== 0 && (
         <div className="mobile-rain-overlay" />
       )}
       {/* Snow animation overlay */}
@@ -1033,40 +1384,46 @@ function MobileHeroView({
           })}
         </div>
 
-        {/* Hero Temperature & Date Block */}
-        <div className="mobile-hero-temp-block">
-          <span className="mobile-nav-date">{localDate} • {localTime}</span>
-          <div className="temp-number-row">
-            <span className="temp-number">{tempVal}</span>
-            <span className="temp-degree-symbol">°</span>
-          </div>
-          <span className="temp-subtitle">
-            Feels like {parseInt(tempVal) + 2}° • {weatherDesc || 'Calm'}
-          </span>
+        {/* Minimal Weather Bar Pill */}
+        <div className="mobile-minimal-weather-bar">
+          <span className="weather-temp-badge">{tempVal}°</span>
+          <span className="weather-divider">•</span>
+          <span className="weather-condition">{weatherDesc || 'Calm'}</span>
+          <span className="weather-divider">•</span>
+          <span className="weather-time">{localTime}</span>
         </div>
 
         {/* Central Playback & Interactive Ring */}
         <div className="mobile-hero-playback-section">
           <div className="mobile-playback-ring-wrapper">
-            <svg className={`timer-svg ${isPlaying ? 'playing' : ''}`} width="90" height="90">
+            <svg className={`timer-svg ${isPlaying ? 'playing' : ''}`} width="102" height="102">
               <circle 
                 className="timer-ring-bg"
-                cx="45" 
-                cy="45" 
-                r={radius} 
+                cx="51" 
+                cy="51" 
+                r="47" 
               />
               <circle 
                 className="timer-ring-fill"
-                cx="45" 
-                cy="45" 
-                r={radius}
-                strokeDasharray={circ}
-                strokeDashoffset={strokeOffset}
+                cx="51" 
+                cy="51" 
+                r="47"
+                stroke={dest.accentColor || '#ffffff'}
+                strokeDasharray={2 * Math.PI * 47}
+                strokeDashoffset={(2 * Math.PI * 47) - (progressRatio * 2 * Math.PI * 47)}
               />
             </svg>
             <button 
               className={`mobile-main-play-btn ${isPlaying ? 'playing' : ''}`}
               onClick={togglePlayback}
+              style={
+                isPlaying
+                  ? {
+                      borderColor: dest.accentColor || 'rgba(255, 255, 255, 0.35)',
+                      boxShadow: `0 8px 32px rgba(0,0,0,0.3), 0 0 20px ${dest.glowColor || 'rgba(255,255,255,0.3)'}`
+                    }
+                  : undefined
+              }
               aria-label={isPlaying ? 'Pause ambient soundscape' : 'Play ambient soundscape'}
             >
               {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />}
@@ -1139,8 +1496,8 @@ const DESTINATIONS = [
     weather: 'Warm Rain 24°C',
     accentColor: '#4ade80', // Emerald Leaf Green
     glowColor: 'rgba(74, 222, 128, 0.5)',
-    sounds: ['Rain', 'Birds', 'Wind'],
-    volPreset: { rain: 75, birds: 60, wind: 40 }
+    sounds: ['Canopy Rain', 'Leaf Drips', 'Waterfall', 'Tree Frogs', 'Bamboo Flute'],
+    volPreset: { canopy_rain: 70, leaf_drips: 55, waterfall: 65, tree_frogs: 50, bamboo_flute: 60 }
   },
   {
     id: 'desert',
@@ -1271,14 +1628,18 @@ const MIX_SOUNDS = [
 // Dynamic Mixer Sounds selector for all 6 location soundscapes
 const getMixSounds = (activeDest) => {
   if (activeDest === 0) {
-    // Ancient Forest
+    // Ancient Forest (Costa Rica Rain Forest)
     return [
-      { id: 'rain', name: 'Rainfall', icon: CloudRain, color: '#60a5fa' },
-      { id: 'birds', name: 'Forest Birds', icon: BirdIcon, color: '#4ade80' },
-      { id: 'wind', name: 'Canopy Wind', icon: Wind, color: '#a7f3d0' },
-      { id: 'stream', name: 'River Stream', icon: Droplet, color: '#38bdf8' },
-      { id: 'crickets', name: 'Night Crickets', icon: Volume2, color: '#34d399' },
-      { id: 'thunder', name: 'Distant Thunder', icon: Zap, color: '#facc15' }
+      { id: 'canopy_rain', name: 'Canopy Rain', icon: CloudRain, color: '#60a5fa' },
+      { id: 'leaf_drips', name: 'Leaf Drips', icon: Droplet, color: '#38bdf8' },
+      { id: 'waterfall', name: 'Waterfall', icon: Droplet, color: '#0ea5e9' },
+      { id: 'tree_frogs', name: 'Tree Frogs', icon: Volume2, color: '#4ade80' },
+      { id: 'cicadas', name: 'Cicadas', icon: Sparkles, color: '#facc15' },
+      { id: 'macaw_calls', name: 'Macaw Calls', icon: BirdIcon, color: '#ef4444' },
+      { id: 'jungle_breeze', name: 'Jungle Breeze', icon: Wind, color: '#a7f3d0' },
+      { id: 'howler_calls', name: 'Howler Calls', icon: Volume2, color: '#fb923c' },
+      { id: 'bamboo_flute', name: 'Bamboo Flute', icon: Music, color: '#c084fc' },
+      { id: 'marimba_tones', name: 'Marimba Tones', icon: Music, color: '#fbbf24' }
     ];
   } else if (activeDest === 1) {
     // Celestial Dunes
@@ -1392,7 +1753,7 @@ function App() {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
-  const [activeDestination, setActiveDestination] = useState(1)
+  const [activeDestination, setActiveDestination] = useState(0)
 
   // Phone Mockup Tilt Effect
   const [tiltStyle, setTiltStyle] = useState({})
@@ -1401,7 +1762,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false)
 
   // Sound Mixer States
-  const [activeSounds, setActiveSounds] = useState(['dunes_wind', 'sand_drift', 'oud', 'crickets'])
+  const [activeSounds, setActiveSounds] = useState(['rain', 'birds', 'wind'])
   const [soundVolumes, setSoundVolumes] = useState({
     dunes_wind: 60,
     sand_drift: 35,
@@ -1968,29 +2329,6 @@ function App() {
           </div>
         </section>
         )}
-
-        {/* 2. Trusted / Featured Section */}
-        <section className="trusted-section">
-          <h2 className="trusted-label">Featured & Recommended On</h2>
-          <div className="trusted-logos">
-            <div className="logo-item">
-              <Smartphone size={20} />
-              <span>App Store Awards</span>
-            </div>
-            <div className="logo-item">
-              <Star size={20} fill="currentColor" />
-              <span>Product Hunt #1</span>
-            </div>
-            <div className="logo-item">
-              <Compass size={20} />
-              <span>Tech Blogs</span>
-            </div>
-            <div className="logo-item">
-              <Award size={20} />
-              <span>Apple Design Nominee</span>
-            </div>
-          </div>
-        </section>
 
         {/* 3. Why You'll Love It Section */}
         <section className="section" id="why-love">
