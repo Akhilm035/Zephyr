@@ -1832,6 +1832,63 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Silky smooth auto-transition when scrolling down from first fold
+  useEffect(() => {
+    let isTransitioning = false
+    let startY = 0
+
+    const handleFirstFoldWheel = (e) => {
+      if (window.scrollY < 30 && e.deltaY > 0 && !isTransitioning) {
+        isTransitioning = true
+        const targetSection = document.getElementById('why-love') || document.querySelector('.section')
+        if (targetSection) {
+          targetSection.scrollIntoView({ behavior: 'smooth' })
+        } else {
+          window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
+        }
+        setTimeout(() => {
+          isTransitioning = false
+        }, 800)
+      }
+    }
+
+    const handleFirstFoldTouchStart = (e) => {
+      if (window.scrollY < 30) {
+        startY = e.touches[0].clientY
+      }
+    }
+
+    const handleFirstFoldTouchMove = (e) => {
+      if (window.scrollY < 30 && startY > 0 && !isTransitioning) {
+        const currentY = e.touches[0].clientY
+        const diffY = startY - currentY
+        if (diffY > 20) {
+          isTransitioning = true
+          startY = 0
+          const targetSection = document.getElementById('why-love') || document.querySelector('.section')
+          if (targetSection) {
+            targetSection.scrollIntoView({ behavior: 'smooth' })
+          } else {
+            window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
+          }
+          setTimeout(() => {
+            isTransitioning = false
+          }, 800)
+        }
+      }
+    }
+
+    window.addEventListener('wheel', handleFirstFoldWheel, { passive: true })
+    window.addEventListener('touchstart', handleFirstFoldTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleFirstFoldTouchMove, { passive: true })
+
+    return () => {
+      window.removeEventListener('wheel', handleFirstFoldWheel)
+      window.removeEventListener('touchstart', handleFirstFoldTouchStart)
+      window.removeEventListener('touchmove', handleFirstFoldTouchMove)
+    }
+  }, [])
+
   // Listen to Mouse Move on Cards to set spotlight variables
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -2657,46 +2714,48 @@ function App() {
               </ul>
             </div>
 
-            <div className="canvas-mix-visual">
-              {/* Connected node canvas display */}
-              <div className="phone-mockup-flat">
-                <div className="phone-flat-circle">
-                  <Volume2 size={32} style={{ color: 'var(--c-lavender-bright)' }} />
+            {!isMobile && (
+              <div className="canvas-mix-visual">
+                {/* Connected node canvas display */}
+                <div className="phone-mockup-flat">
+                  <div className="phone-flat-circle">
+                    <Volume2 size={32} style={{ color: 'var(--c-lavender-bright)' }} />
+                  </div>
                 </div>
-              </div>
 
-              {/* Node Chips floating in absolute space */}
-              <div className="mix-node-chip node-1">
-                <CloudRain size={16} style={{ color: '#60a5fa' }} />
-                <span>Heavy Rain</span>
-              </div>
-              <div className="mix-node-chip node-2">
-                <Flame size={16} style={{ color: '#f97316' }} />
-                <span>Pine Fireplace</span>
-              </div>
-              <div className="mix-node-chip node-3">
-                <Wind size={16} style={{ color: '#cbd5e1' }} />
-                <span>Alpine Wind</span>
-              </div>
-              <div className="mix-node-chip node-4">
-                <Music size={16} style={{ color: '#c084fc' }} />
-                <span>Lofi Guitar</span>
-              </div>
+                {/* Node Chips floating in absolute space */}
+                <div className="mix-node-chip node-1">
+                  <CloudRain size={16} style={{ color: '#60a5fa' }} />
+                  <span>Heavy Rain</span>
+                </div>
+                <div className="mix-node-chip node-2">
+                  <Flame size={16} style={{ color: '#f97316' }} />
+                  <span>Pine Fireplace</span>
+                </div>
+                <div className="mix-node-chip node-3">
+                  <Wind size={16} style={{ color: '#cbd5e1' }} />
+                  <span>Alpine Wind</span>
+                </div>
+                <div className="mix-node-chip node-4">
+                  <Music size={16} style={{ color: '#c084fc' }} />
+                  <span>Lofi Guitar</span>
+                </div>
 
-              {/* Connecting lines SVG canvas */}
-              <svg className="mix-connecting-svg" viewBox="0 0 500 500">
-                <defs>
-                  <linearGradient id="line-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="var(--c-lavender-bright)" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="var(--c-sunset)" stopOpacity="0.4" />
-                  </linearGradient>
-                </defs>
-                <path d="M 120 120 L 250 250" className="mixing-line" />
-                <path d="M 380 90 L 250 250" className="mixing-line" />
-                <path d="M 110 380 L 250 250" className="mixing-line" />
-                <path d="M 380 390 L 250 250" className="mixing-line" />
-              </svg>
-            </div>
+                {/* Connecting lines SVG canvas */}
+                <svg className="mix-connecting-svg" viewBox="0 0 500 500">
+                  <defs>
+                    <linearGradient id="line-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="var(--c-lavender-bright)" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="var(--c-sunset)" stopOpacity="0.4" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M 120 120 L 250 250" className="mixing-line" />
+                  <path d="M 380 90 L 250 250" className="mixing-line" />
+                  <path d="M 110 380 L 250 250" className="mixing-line" />
+                  <path d="M 380 390 L 250 250" className="mixing-line" />
+                </svg>
+              </div>
+            )}
           </div>
         </section>
 

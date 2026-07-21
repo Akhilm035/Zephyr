@@ -1432,11 +1432,15 @@ body {
 /* ==========================================================================
    Explore Beautiful Places Section (Horizontal scroll layout)
    ========================================================================== */
+#destinations .section-header {
+  margin-bottom: 1.25rem !important;
+}
+
 .places-scroll-container {
   display: flex;
   gap: 2.5rem;
   overflow-x: auto;
-  padding: 2rem 0;
+  padding: 0.5rem 0 2rem;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
@@ -3097,5 +3101,133 @@ body {
   #sound-mixer .section-header,
   #personalized .section-header {
     margin-bottom: 0 !important;
+  }
+
+  /* Hide canvas-mix-visual phone graphic on mobile */
+  .canvas-mix-visual {
+    display: none !important;
+  }
+
+  /* Testimonials horizontal touch slider on mobile */
+  #testimonials .testimonials-wrapper {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    scroll-behavior: smooth !important;
+    gap: 1.25rem !important;
+    padding: 0.5rem 0 1.5rem !important;
+    margin: 0 -1.5rem !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+
+  #testimonials .testimonials-wrapper::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  #testimonials .testimonial-card {
+    flex: 0 0 85% !important;
+    max-width: 320px !important;
+    scroll-snap-align: center !important;
+    padding: 2rem 1.5rem !important;
+  }
+
+  /* Creative Minimal Mobile Footer Redesign */
+  .app-footer {
+    padding: 3rem 1.5rem 2.5rem !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(180deg, transparent 0%, rgba(5, 3, 10, 0.8) 100%);
+  }
+
+  .footer-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 2rem !important;
+  }
+
+  .footer-logo-row {
+    align-items: center !important;
+    gap: 0.4rem !important;
+  }
+
+  .footer-logo-row .brand-name {
+    font-size: 1.5rem !important;
+    letter-spacing: -0.03em;
+  }
+
+  .footer-tagline {
+    font-size: 0.78rem !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    font-weight: 400;
+  }
+
+  /* Ultra-minimal 3-column inline glass card on mobile */
+  .footer-links-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    width: 100% !important;
+    gap: 1rem 0.5rem !important;
+    padding: 1.5rem 0.75rem !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 20px !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    text-align: center !important;
+  }
+
+  .footer-link-col {
+    align-items: center !important;
+    gap: 0.5rem !important;
+  }
+
+  .footer-link-header {
+    font-size: 0.62rem !important;
+    letter-spacing: 0.12em !important;
+    color: var(--c-sunset) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    margin-bottom: 0.2rem !important;
+  }
+
+  .footer-link-item {
+    font-size: 0.76rem !important;
+    color: rgba(255, 255, 255, 0.65) !important;
+    text-align: center !important;
+    padding: 0.15rem 0 !important;
+    transition: color 0.2s ease !important;
+  }
+
+  .footer-link-item:hover {
+    color: #ffffff !important;
+  }
+
+  .footer-social-col {
+    align-items: center !important;
+    gap: 0.75rem !important;
+  }
+
+  .social-icons-row {
+    gap: 1.25rem !important;
+  }
+
+  .social-icon-btn {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .footer-bottom-copy {
+    font-size: 0.72rem !important;
+    color: rgba(255, 255, 255, 0.35) !important;
+    line-height: 1.5 !important;
+    margin-top: 0.25rem !important;
+    text-align: center !important;
   }
 }
