@@ -1106,14 +1106,37 @@ function MobileHeroView({
   const progressRatio = timeLeft / 2700
   const strokeOffset = circ - (progressRatio * circ)
 
-  // Touch Swipe Handlers for smooth 1:1 dragging
+  // Touch Swipe Handlers for smooth 1:1 dragging with gesture isolation
+  const isSoundContainerTouch = (e) => {
+    if (!e || !e.target) return false
+    return (
+      e.target.closest('.mobile-sound-drawer-sheet') !== null ||
+      e.target.closest('.drawer-scroll-container') !== null ||
+      e.target.closest('.drawer-sound-card') !== null ||
+      e.target.closest('.drawer-card-volume') !== null ||
+      e.target.closest('.places-scroll-container') !== null ||
+      e.target.closest('.place-card') !== null ||
+      e.target.closest('.testimonials-wrapper') !== null ||
+      e.target.closest('.testimonial-card') !== null
+    )
+  }
+
   const handleTouchStart = (e) => {
+    if (isSoundContainerTouch(e)) {
+      setIsDragging(false)
+      setDragOffset(0)
+      return
+    }
     setTouchStart(e.touches[0].clientX)
     setIsDragging(true)
   }
 
   const handleTouchMove = (e) => {
-    if (!isDragging) return
+    if (!isDragging || isSoundContainerTouch(e)) {
+      setIsDragging(false)
+      setDragOffset(0)
+      return
+    }
     const currentX = e.touches[0].clientX
     const diff = currentX - touchStart
     setDragOffset(diff)
@@ -1129,8 +1152,12 @@ function MobileHeroView({
     }, 120)
   }
 
-  const handleTouchEnd = () => {
-    if (!isDragging) return
+  const handleTouchEnd = (e) => {
+    if (!isDragging || (e && isSoundContainerTouch(e))) {
+      setIsDragging(false)
+      setDragOffset(0)
+      return
+    }
     setIsDragging(false)
     const threshold = 45
 
@@ -1546,10 +1573,20 @@ function MobileHeroView({
       </div>
 
       {/* Glassmorphic Sound Drawer Sheet */}
-      <div className="mobile-sound-drawer-sheet">
+      <div 
+        className="mobile-sound-drawer-sheet"
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
         <div className="drawer-handle" />
 
-        <div className="drawer-scroll-container">
+        <div 
+          className="drawer-scroll-container"
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+        >
           {getMixSounds(activeDestination).map((sound) => {
             const isActive = activeSounds.includes(sound.id)
             const IconComponent = sound.icon
@@ -1558,6 +1595,9 @@ function MobileHeroView({
                 key={sound.id} 
                 className={`drawer-sound-card ${isActive ? 'active' : ''}`}
                 onClick={() => toggleSound(sound.id)}
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchMove={(e) => e.stopPropagation()}
+                onTouchEnd={(e) => e.stopPropagation()}
               >
                 <div className="sound-card-icon-box">
                   <IconComponent size={22} className="sound-card-icon" />
@@ -1930,10 +1970,11 @@ function App() {
         synthRef.current.start(soundId, vol)
         synthRef.current.setVolume(soundId, vol)
       })
-      const allPossibleSounds = [...MIX_SOUNDS, ...getMixSounds(1)]
-      allPossibleSounds.forEach((snd) => {
-        if (!active.includes(snd.id)) {
-          synthRef.current.stop(snd.id)
+      // Stop any active synth sound that is no longer in activeSounds
+      const currentGains = Object.keys(synthRef.current.gains)
+      currentGains.forEach((soundId) => {
+        if (!active.includes(soundId)) {
+          synthRef.current.stop(soundId)
         }
       })
     } else {
