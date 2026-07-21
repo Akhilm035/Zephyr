@@ -709,179 +709,200 @@ class AmbientSynthEngine {
       };
       playBells();
     }
-    else if (soundId === 'canopy_rain') {
-      this.start('rain', volume);
-      return;
-    }
-    else if (soundId === 'jungle_breeze') {
-      this.start('wind', volume);
-      return;
-    }
-    else if (soundId === 'leaf_drips') {
-      const playDrips = () => {
-        if (!this.gains[soundId]) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        osc.type = 'sine';
-        const baseFreq = 800 + Math.random() * 800;
-        osc.frequency.setValueAtTime(baseFreq, now);
-        osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, now + 0.04);
-
-        const dripGain = this.ctx.createGain();
-        dripGain.gain.setValueAtTime(0, now);
-        dripGain.gain.linearRampToValueAtTime(0.25, now + 0.005);
-        dripGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-
-        osc.connect(dripGain);
-        dripGain.connect(gainNode);
-        osc.start(now);
-        osc.stop(now + 0.06);
-
-        const nextTime = 250 + Math.random() * 850;
-        this.leafDripsTimeout = setTimeout(playDrips, nextTime);
-      };
-      playDrips();
-    }
-    else if (soundId === 'waterfall') {
-      const bufferSize = 2 * this.ctx.sampleRate;
+    else if (soundId === 'rainforest_stream') {
+      // Warm continuous tropical stream anchor (40% importance)
+      const bufferSize = 4 * this.ctx.sampleRate;
       const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
         output[i] = Math.random() * 2 - 1;
       }
+
       const noise = this.ctx.createBufferSource();
       noise.buffer = noiseBuffer;
       noise.loop = true;
 
       const lowpass = this.ctx.createBiquadFilter();
       lowpass.type = 'lowpass';
-      lowpass.frequency.value = 500;
+      lowpass.frequency.value = 550;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.35;
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 120;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(lowpass.frequency);
 
       noise.connect(lowpass);
       lowpass.connect(gainNode);
+      lfo.start();
       noise.start();
-      sourceNodes.push(noise);
+      sourceNodes.push(noise, lfo);
     }
-    else if (soundId === 'tree_frogs') {
-      const playFrogs = () => {
+    else if (soundId === 'insect_bed') {
+      // Soft ambient rainforest insect texture (15% importance - soft, high frequency detail without sharpness)
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const bandpass = this.ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.value = 4800;
+      bandpass.Q.value = 3.0;
+
+      const ampLFO = this.ctx.createOscillator();
+      ampLFO.frequency.value = 8.0; // gentle 8Hz flutter
+      const ampGain = this.ctx.createGain();
+      ampGain.gain.value = 0.15;
+
+      ampLFO.connect(ampGain);
+      ampGain.connect(gainNode.gain);
+
+      noise.connect(bandpass);
+      bandpass.connect(gainNode);
+      ampLFO.start();
+      noise.start();
+      sourceNodes.push(noise, ampLFO);
+    }
+    else if (soundId === 'glass_frogs') {
+      // Gentle rhythmic glass frog chorus ambience (10% importance)
+      const playGlassFrogs = () => {
         if (!this.gains[soundId]) return;
         const now = this.ctx.currentTime;
-        const count = 2 + Math.floor(Math.random() * 3);
-        const pitch = 1800 + Math.random() * 400;
+        const count = 1 + Math.floor(Math.random() * 2);
+        const pitch = 1100 + Math.random() * 200;
 
         for (let i = 0; i < count; i++) {
-          const t = now + i * 0.12;
+          const t = now + i * 0.2;
           const osc = this.ctx.createOscillator();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(pitch, t);
-          osc.frequency.linearRampToValueAtTime(pitch + 150, t + 0.05);
+          osc.frequency.exponentialRampToValueAtTime(pitch + 120, t + 0.08);
 
           const frogGain = this.ctx.createGain();
           frogGain.gain.setValueAtTime(0, t);
-          frogGain.gain.linearRampToValueAtTime(0.18, t + 0.01);
-          frogGain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+          frogGain.gain.linearRampToValueAtTime(0.08, t + 0.01);
+          frogGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
 
           osc.connect(frogGain);
           frogGain.connect(gainNode);
           osc.start(t);
-          osc.stop(t + 0.1);
+          osc.stop(t + 0.15);
         }
 
-        const nextTime = 1500 + Math.random() * 2500;
-        this.treeFrogsTimeout = setTimeout(playFrogs, nextTime);
+        const nextTime = 2000 + Math.random() * 3500;
+        this.glassFrogsTimeout = setTimeout(playGlassFrogs, nextTime);
       };
-      playFrogs();
+      playGlassFrogs();
     }
-    else if (soundId === 'cicadas') {
-      const playCicadaPulse = () => {
+    else if (soundId === 'canopy_breeze') {
+      // Light wind moving through leaves (5% importance - slow, never stormy)
+      const bufferSize = 3 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const lowpass = this.ctx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 350;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.06; // ultra slow 0.06Hz breeze
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 100;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(lowpass.frequency);
+
+      noise.connect(lowpass);
+      lowpass.connect(gainNode);
+      lfo.start();
+      noise.start();
+      sourceNodes.push(noise, lfo);
+    }
+    else if (soundId === 'creek_splashes') {
+      // Rare small splashes from water interacting with rocks (3% importance)
+      const playSplash = () => {
         if (!this.gains[soundId]) return;
         const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(4800 + Math.random() * 400, now);
+        
+        const bufferSize = 0.1 * this.ctx.sampleRate;
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
 
-        const filter = this.ctx.createBiquadFilter();
-        filter.type = 'highpass';
-        filter.frequency.value = 4000;
-
-        const cGain = this.ctx.createGain();
-        cGain.gain.setValueAtTime(0, now);
-        cGain.gain.linearRampToValueAtTime(0.08, now + 0.05);
-        cGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
-
-        osc.connect(filter);
-        filter.connect(cGain);
-        cGain.connect(gainNode);
-
-        osc.start(now);
-        osc.stop(now + 0.85);
-
-        const nextTime = 800 + Math.random() * 1200;
-        this.cicadasTimeout = setTimeout(playCicadaPulse, nextTime);
-      };
-      playCicadaPulse();
-    }
-    else if (soundId === 'macaw_calls') {
-      const playMacaw = () => {
-        if (!this.gains[soundId]) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(2200, now);
-        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = noiseBuffer;
 
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(1800, now);
+        filter.frequency.value = 1200 + Math.random() * 600;
         filter.Q.value = 2.0;
 
-        const callGain = this.ctx.createGain();
-        callGain.gain.setValueAtTime(0, now);
-        callGain.gain.linearRampToValueAtTime(0.12, now + 0.02);
-        callGain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+        const sGain = this.ctx.createGain();
+        sGain.gain.setValueAtTime(0, now);
+        sGain.gain.linearRampToValueAtTime(0.06, now + 0.005);
+        sGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
 
-        osc.connect(filter);
-        filter.connect(callGain);
-        callGain.connect(gainNode);
+        noise.connect(filter);
+        filter.connect(sGain);
+        sGain.connect(gainNode);
+        noise.start(now);
 
-        osc.start(now);
-        osc.stop(now + 0.35);
-
-        const nextTime = 8000 + Math.random() * 12000;
-        this.macawTimeout = setTimeout(playMacaw, nextTime);
+        const nextTime = 3000 + Math.random() * 7000;
+        this.creekSplashesTimeout = setTimeout(playSplash, nextTime);
       };
-      playMacaw();
+      playSplash();
     }
-    else if (soundId === 'howler_calls') {
+    else if (soundId === 'howler_monkey' || soundId === 'howler_calls') {
+      // Distant Howler Monkey (2% importance - rare occurrence every few minutes, subtle)
       const playHowler = () => {
         if (!this.gains[soundId]) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.linearRampToValueAtTime(320, now + 0.6);
-        osc.frequency.linearRampToValueAtTime(150, now + 1.2);
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.linearRampToValueAtTime(260, now + 0.8);
+        osc.frequency.linearRampToValueAtTime(130, now + 1.6);
 
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'lowpass';
-        filter.frequency.value = 450;
+        filter.frequency.value = 350; // distant muted sound
 
         const hGain = this.ctx.createGain();
         hGain.gain.setValueAtTime(0, now);
-        hGain.gain.linearRampToValueAtTime(0.2, now + 0.2);
-        hGain.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
+        hGain.gain.linearRampToValueAtTime(0.04, now + 0.3); // subtle max gain 0.04
+        hGain.gain.exponentialRampToValueAtTime(0.001, now + 1.7);
 
         osc.connect(filter);
         filter.connect(hGain);
         hGain.connect(gainNode);
 
         osc.start(now);
-        osc.stop(now + 1.3);
+        osc.stop(now + 1.75);
 
-        const nextTime = 12000 + Math.random() * 18000;
+        // Schedule next howler call in 2 to 4 minutes (120,000ms - 240,000ms)
+        const nextTime = 120000 + Math.random() * 120000;
         this.howlerTimeout = setTimeout(playHowler, nextTime);
       };
-      playHowler();
+      // Initial trigger after 40 seconds
+      this.howlerTimeout = setTimeout(playHowler, 40000 + Math.random() * 30000);
     }
     else if (soundId === 'bamboo_flute') {
       const scale = [293.66, 329.63, 392.00, 440.00, 523.25, 587.33];
@@ -990,10 +1011,12 @@ class AmbientSynthEngine {
     if (soundId === 'canopy_rain') this.stop('rain');
     if (soundId === 'jungle_breeze') this.stop('wind');
     if (soundId === 'leaf_drips') clearTimeout(this.leafDripsTimeout);
+    if (soundId === 'glass_frogs') clearTimeout(this.glassFrogsTimeout);
     if (soundId === 'tree_frogs') clearTimeout(this.treeFrogsTimeout);
+    if (soundId === 'creek_splashes') clearTimeout(this.creekSplashesTimeout);
+    if (soundId === 'howler_monkey' || soundId === 'howler_calls') clearTimeout(this.howlerTimeout);
     if (soundId === 'cicadas') clearTimeout(this.cicadasTimeout);
     if (soundId === 'macaw_calls') clearTimeout(this.macawTimeout);
-    if (soundId === 'howler_calls') clearTimeout(this.howlerTimeout);
     if (soundId === 'bamboo_flute') clearTimeout(this.bambooFluteTimeout);
     if (soundId === 'marimba_tones') clearTimeout(this.marimbaTimeout);
     if (soundId === 'thunder') clearTimeout(this.thunderTimeout);
@@ -1195,9 +1218,99 @@ function MobileHeroView({
         </>
       )}
       
-      {/* Ancient Forest Motion Designer Sound Animations */}
+      {/* Costa Rica Ancient Forest 7-Layer Parallax Environment */}
       {activeDestination === 0 && (
-        <>
+        <div className="cr-rainforest-environment">
+          {/* LAYER 7 – LIGHTING (Volumetric God Rays & Cloud Shadows) */}
+          <div className="cr-layer layer-7-lighting">
+            <div className="volumetric-god-rays" />
+            <div className="canopy-cloud-shadow" />
+          </div>
+
+          {/* LAYER 6 – BACKGROUND CANOPY (Distant Birds & Rare Howler Monkey) */}
+          <div className="cr-layer layer-6-canopy">
+            <div className="distant-canopy-mist" />
+            <div className="distant-bird-flock">
+              <span className="distant-bird b1" />
+              <span className="distant-bird b2" />
+            </div>
+            {/* Barely visible distant Howler Monkey silhouette */}
+            <div className="howler-monkey-rare" title="Distant Howler Monkey">
+              <svg viewBox="0 0 40 40" fill="rgba(15, 23, 20, 0.75)" style={{ width: '22px', height: '22px' }}>
+                <path d="M20,10 C16,10 13,13 13,17 C13,19 14,21 16,22 C15,24 13,27 10,29 C8,30 6,32 8,34 C10,36 14,33 17,31 C19,33 21,34 24,34 C28,34 31,31 31,27 C31,23 28,20 26,19 C27,17 27,14 25,12 C23,10 21,10 20,10 Z" />
+              </svg>
+            </div>
+          </div>
+
+          {/* LAYER 5 – ATMOSPHERIC FX (Drifting Mist, Spores & Bioluminescent Glows) */}
+          <div className="cr-layer layer-5-atmosphere">
+            <div className="stream-mist-fx" />
+            <div className="sun-particle-spores">
+              <span className="spore s1" />
+              <span className="spore s2" />
+              <span className="spore s3" />
+              <span className="spore s4" />
+              <span className="spore s5" />
+            </div>
+            <div className="bioluminescent-glow-fx">
+              <span className="firefly f1" />
+              <span className="firefly f2" />
+            </div>
+          </div>
+
+          {/* LAYER 4 – MIDGROUND JUNGLE (Breathing Ferns & Vines) */}
+          <div className="cr-layer layer-4-midground">
+            <div className="midground-jungle-breathe" />
+          </div>
+
+          {/* LAYER 3 – MAIN STREAM (40% importance - Flowing Water, Ripples, Shimmer) */}
+          <div className="cr-layer layer-3-stream">
+            <div className="diagonal-stream-flow" />
+            <div className="stream-surface-shimmer" />
+            <div className="stream-cyan-reflections" />
+            <div className="stream-water-ripples">
+              <span className="stream-ripple r-1" />
+              <span className="stream-ripple r-2" />
+            </div>
+          </div>
+
+          {/* LAYER 2 – STREAM BANK (Moss Rocks, Drifting Leaves, Tree Frog) */}
+          <div className="cr-layer layer-2-streambank">
+            <div className="moss-rock-bank" />
+            <div className="drifting-leaf-stream" />
+            {/* Partially visible Tree Frog near stream bank */}
+            <div className="tree-frog-streambank" title="Tree Frog near stream bank">
+              <svg viewBox="0 0 30 20" fill="rgba(34, 197, 94, 0.85)" style={{ width: '18px', height: '14px' }}>
+                <ellipse cx="15" cy="10" rx="9" ry="6" />
+                <circle cx="9" cy="5" r="3" fill="#22c55e" />
+                <circle cx="21" cy="5" r="3" fill="#22c55e" />
+              </svg>
+            </div>
+          </div>
+
+          {/* LAYER 1 – FOREGROUND (Wet Tropical Leaves, Falling Water Droplets & Hidden Glass Frog) */}
+          <div className="cr-layer layer-1-foreground">
+            <div className="fg-tropical-leaf-left" />
+            <div className="fg-tropical-leaf-right" />
+            
+            {/* Water Droplets Forming & Falling */}
+            <div className="fg-leaf-droplet-drop">
+              <span className="dew-drop d1" />
+              <span className="dew-drop d2" />
+            </div>
+
+            {/* Hidden Glass Frog breathing & blinking on foreground leaf */}
+            <div className="fg-glass-frog" title="Hidden Glass Frog">
+              <svg viewBox="0 0 40 30" style={{ width: '28px', height: '22px' }}>
+                <ellipse cx="20" cy="18" rx="12" ry="8" fill="rgba(74, 222, 128, 0.8)" stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" />
+                <circle cx="13" cy="11" r="3.5" fill="rgba(134, 239, 172, 0.9)" />
+                <circle cx="27" cy="11" r="3.5" fill="rgba(134, 239, 172, 0.9)" />
+                <circle cx="13" cy="11" r="1.5" fill="#030205" className="frog-pupil-blink" />
+                <circle cx="27" cy="11" r="1.5" fill="#030205" className="frog-pupil-blink" />
+              </svg>
+            </div>
+          </div>
+
           {/* 1. Minimal Canopy Rain */}
           {(activeSounds.includes('canopy_rain') || activeSounds.includes('rain')) && isPlaying && (
             <div className="minimal-canopy-rain">
@@ -1286,7 +1399,7 @@ function MobileHeroView({
               <span className="marimba-ring mr2" />
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Rain animation overlay fallback */}
@@ -1491,13 +1604,22 @@ const DESTINATIONS = [
     id: 'forest',
     title: 'Ancient Forest',
     location: 'Costa Rica Rain Forest',
-    description: 'Immerse in tropical rainfall and soothing bird chatter under a thick canopy of emerald greens.',
-    image: '/ancient_forest.png',
+    description: 'A peaceful rainforest sanctuary after a gentle rainfall. Crystal-clear stream, leaf drips, soft insects, glass & tree frogs, canopy breeze, creek splashes & distant howler monkey.',
+    image: '/costa_rica_ancient_forest.png',
     weather: 'Warm Rain 24°C',
     accentColor: '#4ade80', // Emerald Leaf Green
     glowColor: 'rgba(74, 222, 128, 0.5)',
-    sounds: ['Canopy Rain', 'Leaf Drips', 'Waterfall', 'Tree Frogs', 'Bamboo Flute'],
-    volPreset: { canopy_rain: 70, leaf_drips: 55, waterfall: 65, tree_frogs: 50, bamboo_flute: 60 }
+    sounds: ['Rainforest Stream', 'Leaves & Rain Drips', 'Soft Insect Bed', 'Glass Frog Chorus', 'Tree Frog Calls', 'Canopy Breeze', 'Creek Splashes', 'Distant Howler'],
+    volPreset: {
+      rainforest_stream: 40,
+      leaf_drips: 15,
+      insect_bed: 15,
+      glass_frogs: 10,
+      tree_frogs: 10,
+      canopy_breeze: 5,
+      creek_splashes: 3,
+      howler_monkey: 2
+    }
   },
   {
     id: 'desert',
@@ -1630,14 +1752,14 @@ const getMixSounds = (activeDest) => {
   if (activeDest === 0) {
     // Ancient Forest (Costa Rica Rain Forest)
     return [
-      { id: 'canopy_rain', name: 'Canopy Rain', icon: CloudRain, color: '#60a5fa' },
-      { id: 'leaf_drips', name: 'Leaf Drips', icon: Droplet, color: '#38bdf8' },
-      { id: 'waterfall', name: 'Waterfall', icon: Droplet, color: '#0ea5e9' },
-      { id: 'tree_frogs', name: 'Tree Frogs', icon: Volume2, color: '#4ade80' },
-      { id: 'cicadas', name: 'Cicadas', icon: Sparkles, color: '#facc15' },
-      { id: 'macaw_calls', name: 'Macaw Calls', icon: BirdIcon, color: '#ef4444' },
-      { id: 'jungle_breeze', name: 'Jungle Breeze', icon: Wind, color: '#a7f3d0' },
-      { id: 'howler_calls', name: 'Howler Calls', icon: Volume2, color: '#fb923c' },
+      { id: 'rainforest_stream', name: 'Rainforest Stream', icon: Droplet, color: '#38bdf8' },
+      { id: 'leaf_drips', name: 'Leaves & Rain Drips', icon: CloudRain, color: '#60a5fa' },
+      { id: 'insect_bed', name: 'Soft Insect Bed', icon: Sparkles, color: '#facc15' },
+      { id: 'glass_frogs', name: 'Glass Frog Chorus', icon: Volume2, color: '#4ade80' },
+      { id: 'tree_frogs', name: 'Tree Frog Calls', icon: Volume2, color: '#22c55e' },
+      { id: 'canopy_breeze', name: 'Canopy Breeze', icon: Wind, color: '#a7f3d0' },
+      { id: 'creek_splashes', name: 'Creek Splashes', icon: Droplet, color: '#0ea5e9' },
+      { id: 'howler_monkey', name: 'Distant Howler', icon: Volume2, color: '#fb923c' },
       { id: 'bamboo_flute', name: 'Bamboo Flute', icon: Music, color: '#c084fc' },
       { id: 'marimba_tones', name: 'Marimba Tones', icon: Music, color: '#fbbf24' }
     ];
@@ -1761,9 +1883,17 @@ function App() {
   // Audio Playback Mock
   const [isPlaying, setIsPlaying] = useState(false)
 
-  // Sound Mixer States
-  const [activeSounds, setActiveSounds] = useState(['rain', 'birds', 'wind'])
+  // Sound Mixer States - On first play only rainforest_stream is selected
+  const [activeSounds, setActiveSounds] = useState(['rainforest_stream'])
   const [soundVolumes, setSoundVolumes] = useState({
+    rainforest_stream: 40,
+    leaf_drips: 15,
+    insect_bed: 15,
+    glass_frogs: 10,
+    tree_frogs: 10,
+    canopy_breeze: 5,
+    creek_splashes: 3,
+    howler_monkey: 2,
     dunes_wind: 60,
     sand_drift: 35,
     oud: 45,
@@ -1779,7 +1909,7 @@ function App() {
   })
 
   // Selected Preset state
-  const [activePreset, setActivePreset] = useState('stormy_night')
+  const [activePreset, setActivePreset] = useState('forest_zen')
 
   // Sleep Timer Countdown inside App Preview
   const [timeLeft, setTimeLeft] = useState(2700) // 45 minutes
@@ -2009,11 +2139,12 @@ function App() {
     showToast(`Preset loaded: ${preset.name}`)
   }
 
-  // Apply a destination zephyr preset
+  // Apply a destination zephyr preset - starts with primary sound selected only
   const selectDestination = (index, shouldScroll = false) => {
     setActiveDestination(index)
     const dest = DESTINATIONS[index]
-    const activeKeys = Object.keys(dest.volPreset)
+    const primarySound = Object.keys(dest.volPreset)[0]
+    const activeKeys = [primarySound]
     setActiveSounds(activeKeys)
     setSoundVolumes((prev) => {
       const nextVolumes = { ...prev, ...dest.volPreset }
