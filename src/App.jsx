@@ -741,36 +741,74 @@ class AmbientSynthEngine {
       sourceNodes.push(noise, lfo);
     }
     else if (soundId === 'insect_bed') {
-      // Soft ambient rainforest insect texture (15% importance - soft, high frequency detail without sharpness)
+      // Organic rainforest night insect bed (Dual AM-modulated harmonic tree crickets & katydids + silk air texture)
+      const now = this.ctx.currentTime;
+
+      // 1. Dual Sine Oscillators for Tree Cricket Stridulation
+      const osc1 = this.ctx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(4350, now);
+
+      const osc2 = this.ctx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(5180, now);
+
+      // Organic Pitch Vibrato LFO (slow pitch drift)
+      const vibLFO = this.ctx.createOscillator();
+      vibLFO.frequency.setValueAtTime(0.35, now);
+      const vibGain = this.ctx.createGain();
+      vibGain.gain.setValueAtTime(35, now);
+      vibLFO.connect(vibGain);
+      vibGain.connect(osc1.frequency);
+      vibGain.connect(osc2.frequency);
+
+      // Tremolo AM LFO for wing stridulation rhythm (13.5 Hz)
+      const amLFO = this.ctx.createOscillator();
+      amLFO.frequency.setValueAtTime(13.5, now);
+      const amGainNode = this.ctx.createGain();
+      amGainNode.gain.setValueAtTime(0.35, now);
+      amLFO.connect(amGainNode.gain);
+
+      // 2. High-Frequency Air Noise Texture Layer
       const bufferSize = 2 * this.ctx.sampleRate;
       const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
         output[i] = Math.random() * 2 - 1;
       }
-
       const noise = this.ctx.createBufferSource();
       noise.buffer = noiseBuffer;
       noise.loop = true;
 
-      const bandpass = this.ctx.createBiquadFilter();
-      bandpass.type = 'bandpass';
-      bandpass.frequency.value = 4800;
-      bandpass.Q.value = 3.0;
+      const noiseFilter = this.ctx.createBiquadFilter();
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.setValueAtTime(4600, now);
+      noiseFilter.Q.setValueAtTime(4.5, now);
 
-      const ampLFO = this.ctx.createOscillator();
-      ampLFO.frequency.value = 8.0; // gentle 8Hz flutter
-      const ampGain = this.ctx.createGain();
-      ampGain.gain.value = 0.15;
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.05, now);
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
 
-      ampLFO.connect(ampGain);
-      ampGain.connect(gainNode.gain);
+      // Master Lowpass Filter for silkiness (protects ears, removes sharp harshness)
+      const masterFilter = this.ctx.createBiquadFilter();
+      masterFilter.type = 'lowpass';
+      masterFilter.frequency.setValueAtTime(5800, now);
 
-      noise.connect(bandpass);
-      bandpass.connect(gainNode);
-      ampLFO.start();
-      noise.start();
-      sourceNodes.push(noise, ampLFO);
+      osc1.connect(amGainNode);
+      osc2.connect(amGainNode);
+      amGainNode.connect(masterFilter);
+      noiseGain.connect(masterFilter);
+
+      masterFilter.connect(gainNode);
+
+      vibLFO.start(now);
+      amLFO.start(now);
+      osc1.start(now);
+      osc2.start(now);
+      noise.start(now);
+
+      sourceNodes.push(osc1, osc2, vibLFO, amLFO, noise);
     }
     else if (soundId === 'glass_frogs') {
       // Gentle rhythmic glass frog chorus ambience (10% importance)
