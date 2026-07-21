@@ -1402,28 +1402,10 @@ function MobileHeroView({
           )}
 
           {/* 8. Howler Calls Echo Rings */}
-          {activeSounds.includes('howler_calls') && isPlaying && (
+          {(activeSounds.includes('howler_calls') || activeSounds.includes('howler_monkey')) && isPlaying && (
             <div className="forest-howler-echo">
               <span className="echo-ring er1" />
               <span className="echo-ring er2" />
-            </div>
-          )}
-
-          {/* 9. Bamboo Flute Floating Musical Notes */}
-          {activeSounds.includes('bamboo_flute') && isPlaying && (
-            <div className="dunes-music-notes-overlay">
-              <div className="music-note n-1">♪</div>
-              <div className="music-note n-2">♫</div>
-              <div className="music-note n-3">♩</div>
-              <div className="music-note n-4">♬</div>
-            </div>
-          )}
-
-          {/* 10. Marimba Tones Resonance Pulse */}
-          {activeSounds.includes('marimba_tones') && isPlaying && (
-            <div className="forest-marimba-pulse">
-              <span className="marimba-ring mr1" />
-              <span className="marimba-ring mr2" />
             </div>
           )}
         </div>
@@ -1799,9 +1781,7 @@ const getMixSounds = (activeDest) => {
       { id: 'tree_frogs', name: 'Tree Frog Calls', icon: Volume2, color: '#22c55e' },
       { id: 'canopy_breeze', name: 'Canopy Breeze', icon: Wind, color: '#a7f3d0' },
       { id: 'creek_splashes', name: 'Creek Splashes', icon: Droplet, color: '#0ea5e9' },
-      { id: 'howler_monkey', name: 'Distant Howler', icon: Volume2, color: '#fb923c' },
-      { id: 'bamboo_flute', name: 'Bamboo Flute', icon: Music, color: '#c084fc' },
-      { id: 'marimba_tones', name: 'Marimba Tones', icon: Music, color: '#fbbf24' }
+      { id: 'howler_monkey', name: 'Distant Howler', icon: Volume2, color: '#fb923c' }
     ];
   } else if (activeDest === 1) {
     // Celestial Dunes
