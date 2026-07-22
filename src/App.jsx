@@ -741,36 +741,74 @@ class AmbientSynthEngine {
       sourceNodes.push(noise, lfo);
     }
     else if (soundId === 'insect_bed') {
-      // Soft ambient rainforest insect texture (15% importance - soft, high frequency detail without sharpness)
+      // Organic rainforest night insect bed (Dual AM-modulated harmonic tree crickets & katydids + silk air texture)
+      const now = this.ctx.currentTime;
+
+      // 1. Dual Sine Oscillators for Tree Cricket Stridulation
+      const osc1 = this.ctx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(4350, now);
+
+      const osc2 = this.ctx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(5180, now);
+
+      // Organic Pitch Vibrato LFO (slow pitch drift)
+      const vibLFO = this.ctx.createOscillator();
+      vibLFO.frequency.setValueAtTime(0.35, now);
+      const vibGain = this.ctx.createGain();
+      vibGain.gain.setValueAtTime(35, now);
+      vibLFO.connect(vibGain);
+      vibGain.connect(osc1.frequency);
+      vibGain.connect(osc2.frequency);
+
+      // Tremolo AM LFO for wing stridulation rhythm (13.5 Hz)
+      const amLFO = this.ctx.createOscillator();
+      amLFO.frequency.setValueAtTime(13.5, now);
+      const amGainNode = this.ctx.createGain();
+      amGainNode.gain.setValueAtTime(0.35, now);
+      amLFO.connect(amGainNode.gain);
+
+      // 2. High-Frequency Air Noise Texture Layer
       const bufferSize = 2 * this.ctx.sampleRate;
       const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
         output[i] = Math.random() * 2 - 1;
       }
-
       const noise = this.ctx.createBufferSource();
       noise.buffer = noiseBuffer;
       noise.loop = true;
 
-      const bandpass = this.ctx.createBiquadFilter();
-      bandpass.type = 'bandpass';
-      bandpass.frequency.value = 4800;
-      bandpass.Q.value = 3.0;
+      const noiseFilter = this.ctx.createBiquadFilter();
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.setValueAtTime(4600, now);
+      noiseFilter.Q.setValueAtTime(4.5, now);
 
-      const ampLFO = this.ctx.createOscillator();
-      ampLFO.frequency.value = 8.0; // gentle 8Hz flutter
-      const ampGain = this.ctx.createGain();
-      ampGain.gain.value = 0.15;
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.05, now);
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
 
-      ampLFO.connect(ampGain);
-      ampGain.connect(gainNode.gain);
+      // Master Lowpass Filter for silkiness (protects ears, removes sharp harshness)
+      const masterFilter = this.ctx.createBiquadFilter();
+      masterFilter.type = 'lowpass';
+      masterFilter.frequency.setValueAtTime(5800, now);
 
-      noise.connect(bandpass);
-      bandpass.connect(gainNode);
-      ampLFO.start();
-      noise.start();
-      sourceNodes.push(noise, ampLFO);
+      osc1.connect(amGainNode);
+      osc2.connect(amGainNode);
+      amGainNode.connect(masterFilter);
+      noiseGain.connect(masterFilter);
+
+      masterFilter.connect(gainNode);
+
+      vibLFO.start(now);
+      amLFO.start(now);
+      osc1.start(now);
+      osc2.start(now);
+      noise.start(now);
+
+      sourceNodes.push(osc1, osc2, vibLFO, amLFO, noise);
     }
     else if (soundId === 'glass_frogs') {
       // Gentle rhythmic glass frog chorus ambience (10% importance)
@@ -904,79 +942,118 @@ class AmbientSynthEngine {
       // Initial trigger after 40 seconds
       this.howlerTimeout = setTimeout(playHowler, 40000 + Math.random() * 30000);
     }
-    else if (soundId === 'bamboo_flute') {
-      const scale = [293.66, 329.63, 392.00, 440.00, 523.25, 587.33];
-      const playFlute = () => {
+    else if (soundId === 'longing_aurdos') {
+      // "Longing by Aurdos" - Warm emotional ambient house/lo-fi track
+      const tempo = 0.625; // 96 BPM (0.625s per beat)
+      let step = 0;
+
+      // Chord Progression definition (FM7 -> Am7 -> BbM7 -> C7)
+      const progressions = [
+        [174.61, 220.00, 261.63, 329.63], // FM7
+        [220.00, 261.63, 329.63, 392.00], // Am7
+        [233.08, 293.66, 349.23, 440.00], // BbM7
+        [130.81, 196.00, 329.63, 466.16]  // C7
+      ];
+      let currentChordIdx = 0;
+
+      const playLoop = () => {
         if (!this.gains[soundId]) return;
         const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        osc.type = 'sine';
-        const freq = scale[Math.floor(Math.random() * scale.length)];
-        osc.frequency.setValueAtTime(freq, now);
 
-        const vib = this.ctx.createOscillator();
-        vib.frequency.value = 4.8;
-        const vibGain = this.ctx.createGain();
-        vibGain.gain.value = 2.5;
-        vib.connect(vibGain);
-        vibGain.connect(osc.frequency);
+        // 1. Soft Warm Kick (On beats 0 and 2)
+        if (step % 2 === 0) {
+          const kickOsc = this.ctx.createOscillator();
+          kickOsc.type = 'sine';
+          kickOsc.frequency.setValueAtTime(100, now);
+          kickOsc.frequency.exponentialRampToValueAtTime(38, now + 0.12);
 
-        const fGain = this.ctx.createGain();
-        fGain.gain.setValueAtTime(0, now);
-        fGain.gain.linearRampToValueAtTime(0.25, now + 0.3);
-        fGain.gain.setValueAtTime(0.25, now + 1.8);
-        fGain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+          const kickGain = this.ctx.createGain();
+          kickGain.gain.setValueAtTime(0, now);
+          kickGain.gain.linearRampToValueAtTime(0.35, now + 0.005);
+          kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
 
-        osc.connect(fGain);
-        fGain.connect(gainNode);
+          kickOsc.connect(kickGain);
+          kickGain.connect(gainNode);
+          kickOsc.start(now);
+          kickOsc.stop(now + 0.18);
+        }
 
-        osc.start(now);
-        vib.start(now);
-        osc.stop(now + 2.6);
-        vib.stop(now + 2.6);
+        // 2. Plucked Muted Electric Guitar (Plays emotional melody on half beats)
+        if (step % 4 === 1 || step % 4 === 3 || (step % 8 === 0 && Math.random() > 0.5)) {
+          const chord = progressions[currentChordIdx];
+          const baseFreq = chord[Math.floor(Math.random() * chord.length)] * 2.0;
 
-        const nextTime = 3000 + Math.random() * 4000;
-        this.bambooFluteTimeout = setTimeout(playFlute, nextTime);
+          const pluckOsc = this.ctx.createOscillator();
+          pluckOsc.type = 'triangle';
+          pluckOsc.frequency.setValueAtTime(baseFreq, now);
+
+          const subOsc = this.ctx.createOscillator();
+          subOsc.type = 'sine';
+          subOsc.frequency.setValueAtTime(baseFreq * 0.5, now);
+
+          const pluckFilter = this.ctx.createBiquadFilter();
+          pluckFilter.type = 'lowpass';
+          pluckFilter.frequency.setValueAtTime(1100, now);
+
+          const pluckGain = this.ctx.createGain();
+          pluckGain.gain.setValueAtTime(0, now);
+          pluckGain.gain.linearRampToValueAtTime(0.24, now + 0.008);
+          pluckGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+          const delayNode = this.ctx.createDelay();
+          delayNode.delayTime.value = tempo * 0.75;
+          const delayGain = this.ctx.createGain();
+          delayGain.gain.value = 0.4;
+
+          pluckOsc.connect(pluckFilter);
+          subOsc.connect(pluckFilter);
+          pluckFilter.connect(pluckGain);
+          
+          pluckGain.connect(gainNode);
+          pluckGain.connect(delayNode);
+          delayNode.connect(delayGain);
+          delayGain.connect(gainNode);
+          delayGain.connect(delayNode); // feedback loop
+
+          pluckOsc.start(now);
+          subOsc.start(now);
+          pluckOsc.stop(now + 0.95);
+          subOsc.stop(now + 0.95);
+        }
+
+        // 3. Slow Ambient Synth Pad (Triggers chord pads every 8 beats)
+        if (step % 8 === 0) {
+          currentChordIdx = (currentChordIdx + 1) % progressions.length;
+          const chord = progressions[currentChordIdx];
+
+          chord.forEach((freq) => {
+            const padOsc = this.ctx.createOscillator();
+            padOsc.type = 'sine';
+            padOsc.frequency.setValueAtTime(freq, now);
+
+            const padFilter = this.ctx.createBiquadFilter();
+            padFilter.type = 'lowpass';
+            padFilter.frequency.setValueAtTime(450, now);
+
+            const padGain = this.ctx.createGain();
+            padGain.gain.setValueAtTime(0, now);
+            padGain.gain.linearRampToValueAtTime(0.08, now + 1.8);
+            padGain.gain.setValueAtTime(0.08, now + 3.5);
+            padGain.gain.exponentialRampToValueAtTime(0.001, now + 4.8);
+
+            padOsc.connect(padFilter);
+            padFilter.connect(padGain);
+            padGain.connect(gainNode);
+
+            padOsc.start(now);
+            padOsc.stop(now + 4.95);
+          });
+        }
+
+        step = (step + 1) % 16;
+        this.longingAurdosTimeout = setTimeout(playLoop, tempo * 1000);
       };
-      playFlute();
-    }
-    else if (soundId === 'marimba_tones') {
-      const scale = [196.00, 220.00, 261.63, 293.66, 329.63, 392.00];
-      const playMarimba = () => {
-        if (!this.gains[soundId]) return;
-        const now = this.ctx.currentTime;
-        const freq = scale[Math.floor(Math.random() * scale.length)];
-        
-        const osc1 = this.ctx.createOscillator();
-        osc1.type = 'triangle';
-        osc1.frequency.setValueAtTime(freq, now);
-
-        const osc2 = this.ctx.createOscillator();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(freq * 3.0, now);
-
-        const mGain = this.ctx.createGain();
-        mGain.gain.setValueAtTime(0, now);
-        mGain.gain.linearRampToValueAtTime(0.3, now + 0.008);
-        mGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-
-        const overtoneGain = this.ctx.createGain();
-        overtoneGain.gain.value = 0.15;
-
-        osc1.connect(mGain);
-        osc2.connect(overtoneGain);
-        overtoneGain.connect(mGain);
-        mGain.connect(gainNode);
-
-        osc1.start(now);
-        osc2.start(now);
-        osc1.stop(now + 0.75);
-        osc2.stop(now + 0.75);
-
-        const nextTime = 800 + Math.random() * 2000;
-        this.marimbaTimeout = setTimeout(playMarimba, nextTime);
-      };
-      playMarimba();
+      playLoop();
     }
     else if (soundId === 'falcon') {
       const playFalcon = () => {
@@ -1019,6 +1096,7 @@ class AmbientSynthEngine {
     if (soundId === 'macaw_calls') clearTimeout(this.macawTimeout);
     if (soundId === 'bamboo_flute') clearTimeout(this.bambooFluteTimeout);
     if (soundId === 'marimba_tones') clearTimeout(this.marimbaTimeout);
+    if (soundId === 'longing_aurdos') clearTimeout(this.longingAurdosTimeout);
     if (soundId === 'thunder') clearTimeout(this.thunderTimeout);
     if (soundId === 'fire' || soundId === 'campfire') {
       clearTimeout(this.fireTimeout);
@@ -1631,7 +1709,7 @@ const DESTINATIONS = [
     weather: 'Warm Rain 24°C',
     accentColor: '#4ade80', // Emerald Leaf Green
     glowColor: 'rgba(74, 222, 128, 0.5)',
-    sounds: ['Rainforest Stream', 'Leaves & Rain Drips', 'Soft Insect Bed', 'Glass Frog Chorus', 'Tree Frog Calls', 'Canopy Breeze', 'Creek Splashes', 'Distant Howler'],
+    sounds: ['Rainforest Stream', 'Leaves & Rain Drips', 'Soft Insect Bed', 'Glass Frog Chorus', 'Tree Frog Calls', 'Canopy Breeze', 'Creek Splashes', 'Distant Howler', 'Longing by Aurdos'],
     volPreset: {
       rainforest_stream: 40,
       leaf_drips: 15,
@@ -1640,7 +1718,8 @@ const DESTINATIONS = [
       tree_frogs: 10,
       canopy_breeze: 5,
       creek_splashes: 3,
-      howler_monkey: 2
+      howler_monkey: 2,
+      longing_aurdos: 30
     }
   },
   {
@@ -1903,8 +1982,8 @@ function App() {
   // Audio Playback Mock
   const [isPlaying, setIsPlaying] = useState(false)
 
-  // Sound Mixer States - On first play only rainforest_stream is selected
-  const [activeSounds, setActiveSounds] = useState(['rainforest_stream'])
+  // Sound Mixer States - On first play rainforest_stream and longing_aurdos are selected by default
+  const [activeSounds, setActiveSounds] = useState(['rainforest_stream', 'longing_aurdos'])
   const [soundVolumes, setSoundVolumes] = useState({
     rainforest_stream: 40,
     leaf_drips: 15,
@@ -1914,6 +1993,7 @@ function App() {
     canopy_breeze: 5,
     creek_splashes: 3,
     howler_monkey: 2,
+    longing_aurdos: 30,
     dunes_wind: 60,
     sand_drift: 35,
     oud: 45,
@@ -2160,12 +2240,12 @@ function App() {
     showToast(`Preset loaded: ${preset.name}`)
   }
 
-  // Apply a destination zephyr preset - starts with primary sound selected only
+  // Apply a destination zephyr preset - starts with primary sound selected only (plus longing_aurdos for Costa Rica)
   const selectDestination = (index, shouldScroll = false) => {
     setActiveDestination(index)
     const dest = DESTINATIONS[index]
     const primarySound = Object.keys(dest.volPreset)[0]
-    const activeKeys = [primarySound]
+    const activeKeys = index === 0 ? [primarySound, 'longing_aurdos'] : [primarySound]
     setActiveSounds(activeKeys)
     setSoundVolumes((prev) => {
       const nextVolumes = { ...prev, ...dest.volPreset }
