@@ -2660,6 +2660,7 @@ const DESTINATIONS = [
     location: 'Costa Rica Rain Forest',
     description: 'A peaceful rainforest sanctuary after a gentle rainfall. Crystal-clear stream, leaf drips, soft insects, glass & tree frogs, canopy breeze, creek splashes & distant howler monkey.',
     image: '/costa_rica_ancient_forest.png',
+    imageNight: '/costa_rica_ancient_forest_night.jpg',
     weather: 'Warm Rain 24°C',
     accentColor: '#4ade80', // Emerald Leaf Green
     glowColor: 'rgba(74, 222, 128, 0.5)',
