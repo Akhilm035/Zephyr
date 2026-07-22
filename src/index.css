@@ -2462,17 +2462,17 @@ body {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: radial-gradient(circle at bottom, rgba(15, 10, 30, 0.6) 0%, rgba(3, 2, 5, 0.95) 100%);
+    background: radial-gradient(circle at bottom, rgba(15, 10, 30, 0.6) 0%, rgba(3, 2, 5, 0.85) 100%);
   }
 
   .mobile-hero-glow.dunes {
-    background: radial-gradient(circle at bottom, rgba(249, 115, 22, 0.18) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.95) 100%);
+    background: radial-gradient(circle at bottom, rgba(249, 115, 22, 0.18) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.85) 100%);
   }
   .mobile-hero-glow.forest {
-    background: radial-gradient(circle at bottom, rgba(34, 197, 94, 0.12) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.95) 100%);
+    background: radial-gradient(circle at bottom, rgba(34, 197, 94, 0.12) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.85) 100%);
   }
   .mobile-hero-glow.alpine {
-    background: radial-gradient(circle at bottom, rgba(192, 132, 252, 0.12) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.95) 100%);
+    background: radial-gradient(circle at bottom, rgba(192, 132, 252, 0.12) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.85) 100%);
   }
 
   /* Top Nav */
