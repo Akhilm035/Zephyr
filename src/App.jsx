@@ -740,75 +740,61 @@ class AmbientSynthEngine {
       noise.start();
       sourceNodes.push(noise, lfo);
     }
-    else if (soundId === 'insect_bed') {
-      // Organic rainforest night insect bed (Dual AM-modulated harmonic tree crickets & katydids + silk air texture)
-      const now = this.ctx.currentTime;
+    else if (soundId === 'toucan') {
+      // Toucan: periodic warm, rhythmic wooden croaks / clacks ("kurr-uk")
+      const playToucan = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const croakCount = 3 + Math.floor(Math.random() * 3); // 3-5 croaks
+        const basePitch = 480 + Math.random() * 60; // warm woody range
 
-      // 1. Dual Sine Oscillators for Tree Cricket Stridulation
-      const osc1 = this.ctx.createOscillator();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(4350, now);
+        for (let i = 0; i < croakCount; i++) {
+          const t = now + i * 0.18; // space between croaks
+          
+          // Triangle carrier oscillator
+          const osc = this.ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(basePitch, t);
+          osc.frequency.exponentialRampToValueAtTime(basePitch * 0.7, t + 0.12);
 
-      const osc2 = this.ctx.createOscillator();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(5180, now);
+          // Sub frequency FM oscillator to give it a croaking rattle rasp
+          const fmOsc = this.ctx.createOscillator();
+          fmOsc.type = 'sawtooth';
+          fmOsc.frequency.setValueAtTime(65, t);
+          const fmGain = this.ctx.createGain();
+          fmGain.gain.setValueAtTime(80, t);
 
-      // Organic Pitch Vibrato LFO (slow pitch drift)
-      const vibLFO = this.ctx.createOscillator();
-      vibLFO.frequency.setValueAtTime(0.35, now);
-      const vibGain = this.ctx.createGain();
-      vibGain.gain.setValueAtTime(35, now);
-      vibLFO.connect(vibGain);
-      vibGain.connect(osc1.frequency);
-      vibGain.connect(osc2.frequency);
+          fmOsc.connect(fmGain);
+          fmGain.connect(osc.frequency);
 
-      // Tremolo AM LFO for wing stridulation rhythm (13.5 Hz)
-      const amLFO = this.ctx.createOscillator();
-      amLFO.frequency.setValueAtTime(13.5, now);
-      const amGainNode = this.ctx.createGain();
-      amGainNode.gain.setValueAtTime(0.35, now);
-      amLFO.connect(amGainNode.gain);
+          // Bandpass filter for hollow beak resonance
+          const bpFilter = this.ctx.createBiquadFilter();
+          bpFilter.type = 'bandpass';
+          bpFilter.frequency.setValueAtTime(750, t);
+          bpFilter.Q.setValueAtTime(3.5, t);
 
-      // 2. High-Frequency Air Noise Texture Layer
-      const bufferSize = 2 * this.ctx.sampleRate;
-      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
-      }
-      const noise = this.ctx.createBufferSource();
-      noise.buffer = noiseBuffer;
-      noise.loop = true;
+          // Envelope
+          const croakGain = this.ctx.createGain();
+          croakGain.gain.setValueAtTime(0, t);
+          croakGain.gain.linearRampToValueAtTime(0.3, t + 0.01);
+          croakGain.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
 
-      const noiseFilter = this.ctx.createBiquadFilter();
-      noiseFilter.type = 'bandpass';
-      noiseFilter.frequency.setValueAtTime(4600, now);
-      noiseFilter.Q.setValueAtTime(4.5, now);
+          osc.connect(bpFilter);
+          bpFilter.connect(croakGain);
+          croakGain.connect(gainNode);
 
-      const noiseGain = this.ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.05, now);
-      noise.connect(noiseFilter);
-      noiseFilter.connect(noiseGain);
+          osc.start(t);
+          fmOsc.start(t);
+          osc.stop(t + 0.15);
+          fmOsc.stop(t + 0.15);
+        }
 
-      // Master Lowpass Filter for silkiness (protects ears, removes sharp harshness)
-      const masterFilter = this.ctx.createBiquadFilter();
-      masterFilter.type = 'lowpass';
-      masterFilter.frequency.setValueAtTime(5800, now);
-
-      osc1.connect(amGainNode);
-      osc2.connect(amGainNode);
-      amGainNode.connect(masterFilter);
-      noiseGain.connect(masterFilter);
-
-      masterFilter.connect(gainNode);
-
-      vibLFO.start(now);
-      amLFO.start(now);
-      osc1.start(now);
-      osc2.start(now);
-      noise.start(now);
-
-      sourceNodes.push(osc1, osc2, vibLFO, amLFO, noise);
+        // Schedule next call in 7 to 15 seconds
+        const nextTime = 7000 + Math.random() * 8000;
+        this.toucanTimeout = setTimeout(playToucan, nextTime);
+      };
+      // Initial delay of 5 seconds
+      this.toucanTimeout = setTimeout(playToucan, 5000);
     }
     else if (soundId === 'glass_frogs') {
       // Gentle rhythmic glass frog chorus ambience (10% importance)
@@ -1090,6 +1076,7 @@ class AmbientSynthEngine {
     if (soundId === 'leaf_drips') clearTimeout(this.leafDripsTimeout);
     if (soundId === 'glass_frogs') clearTimeout(this.glassFrogsTimeout);
     if (soundId === 'tree_frogs') clearTimeout(this.treeFrogsTimeout);
+    if (soundId === 'toucan') clearTimeout(this.toucanTimeout);
     if (soundId === 'creek_splashes') clearTimeout(this.creekSplashesTimeout);
     if (soundId === 'howler_monkey' || soundId === 'howler_calls') clearTimeout(this.howlerTimeout);
     if (soundId === 'cicadas') clearTimeout(this.cicadasTimeout);
@@ -1709,11 +1696,11 @@ const DESTINATIONS = [
     weather: 'Warm Rain 24°C',
     accentColor: '#4ade80', // Emerald Leaf Green
     glowColor: 'rgba(74, 222, 128, 0.5)',
-    sounds: ['Rainforest Stream', 'Leaves & Rain Drips', 'Soft Insect Bed', 'Glass Frog Chorus', 'Tree Frog Calls', 'Canopy Breeze', 'Creek Splashes', 'Distant Howler', 'Longing by Aurdos'],
+    sounds: ['Rainforest Stream', 'Leaves & Rain Drips', 'Toucan', 'Glass Frog Chorus', 'Tree Frog Calls', 'Canopy Breeze', 'Creek Splashes', 'Distant Howler', 'Longing by Aurdos'],
     volPreset: {
       rainforest_stream: 40,
       leaf_drips: 15,
-      insect_bed: 15,
+      toucan: 15,
       glass_frogs: 10,
       tree_frogs: 10,
       canopy_breeze: 5,
@@ -1855,12 +1842,13 @@ const getMixSounds = (activeDest) => {
     return [
       { id: 'rainforest_stream', name: 'Rainforest Stream', icon: Droplet, color: '#38bdf8' },
       { id: 'leaf_drips', name: 'Leaves & Rain Drips', icon: CloudRain, color: '#60a5fa' },
-      { id: 'insect_bed', name: 'Soft Insect Bed', icon: Sparkles, color: '#facc15' },
+      { id: 'toucan', name: 'Toucan', icon: BirdIcon, color: '#facc15' },
       { id: 'glass_frogs', name: 'Glass Frog Chorus', icon: Volume2, color: '#4ade80' },
       { id: 'tree_frogs', name: 'Tree Frog Calls', icon: Volume2, color: '#22c55e' },
       { id: 'canopy_breeze', name: 'Canopy Breeze', icon: Wind, color: '#a7f3d0' },
       { id: 'creek_splashes', name: 'Creek Splashes', icon: Droplet, color: '#0ea5e9' },
-      { id: 'howler_monkey', name: 'Distant Howler', icon: Volume2, color: '#fb923c' }
+      { id: 'howler_monkey', name: 'Distant Howler', icon: Volume2, color: '#fb923c' },
+      { id: 'longing_aurdos', name: 'Longing by Aurdos', icon: Music, color: '#f472b6' }
     ];
   } else if (activeDest === 1) {
     // Celestial Dunes
@@ -1987,7 +1975,7 @@ function App() {
   const [soundVolumes, setSoundVolumes] = useState({
     rainforest_stream: 40,
     leaf_drips: 15,
-    insect_bed: 15,
+    toucan: 15,
     glass_frogs: 10,
     tree_frogs: 10,
     canopy_breeze: 5,
