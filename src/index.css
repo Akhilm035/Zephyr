@@ -3944,3 +3944,62 @@ body {
   75% { transform: scale(1.4); opacity: 0; }
   100% { transform: scale(1.4); opacity: 0; }
 }
+
+/* ==========================================================================
+   Costa Rica Ancient Forest Drips Overlay (Falling leaves & Rain Drizzle)
+   ========================================================================== */
+.forest-drips-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Rain falling drizzle lines */
+.forest-rain-drip {
+  position: absolute;
+  width: 1px;
+  height: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0));
+  animation: forest-rain-drizzle 2.2s linear infinite;
+  opacity: 0.8;
+}
+.forest-rain-drip.rd1 { left: 25%; top: -25px; animation-delay: 0.2s; }
+.forest-rain-drip.rd2 { left: 48%; top: -25px; animation-delay: 1.1s; }
+.forest-rain-drip.rd3 { left: 65%; top: -25px; animation-delay: 0.6s; }
+.forest-rain-drip.rd4 { left: 85%; top: -25px; animation-delay: 1.8s; }
+
+@keyframes forest-rain-drizzle {
+  0% { transform: translateY(0) rotate(5deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(280px) rotate(5deg); opacity: 0; }
+}
+
+/* Leaves falling and swaying */
+.forest-falling-leaf {
+  position: absolute;
+  top: -20px;
+  animation: forest-leaf-fall 6s ease-in-out infinite;
+  opacity: 0;
+}
+.forest-falling-leaf.fl1 { left: 15%; animation-delay: 0s; }
+.forest-falling-leaf.fl2 { left: 55%; animation-delay: 2s; }
+.forest-falling-leaf.fl3 { left: 75%; animation-delay: 4s; }
+
+@keyframes forest-leaf-fall {
+  0% {
+    transform: translateY(0) rotate(0deg) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(280px) rotate(360deg) translateX(35px);
+    opacity: 0;
+  }
+}

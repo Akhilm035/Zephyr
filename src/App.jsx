@@ -2269,9 +2269,28 @@ function MobileHeroView({
           {/* 2. Leaf Drips */}
           {activeSounds.includes('leaf_drips') && isPlaying && (
             <div className="forest-drips-layer">
-              <span className="drip d1" />
-              <span className="drip d2" />
-              <span className="drip d3" />
+              {/* Rain falling drizzle */}
+              <span className="forest-rain-drip rd1" />
+              <span className="forest-rain-drip rd2" />
+              <span className="forest-rain-drip rd3" />
+              <span className="forest-rain-drip rd4" />
+              
+              {/* Falling leaves illustrations */}
+              <div className="forest-falling-leaf fl1">
+                <svg viewBox="0 0 24 24" fill="rgba(34, 197, 94, 0.5)" style={{ width: '16px', height: '16px' }}>
+                  <path d="M17,8C14.24,8 12.07,9.68 11.23,12H19.75C19.9,11.37 20,10.7 20,10C20,6 15,3 15,3C15,3 12,8 12,8H9V10H10.1C10.04,10.65 10,11.31 10,12C10,16.42 13.58,20 18,20C18,20 21,15 21,12C21,9.79 19.21,8 17,8Z" />
+                </svg>
+              </div>
+              <div className="forest-falling-leaf fl2">
+                <svg viewBox="0 0 24 24" fill="rgba(74, 222, 128, 0.45)" style={{ width: '14px', height: '14px' }}>
+                  <path d="M17,8C14.24,8 12.07,9.68 11.23,12H19.75C19.9,11.37 20,10.7 20,10C20,6 15,3 15,3C15,3 12,8 12,8H9V10H10.1C10.04,10.65 10,11.31 10,12C10,16.42 13.58,20 18,20C18,20 21,15 21,12C21,9.79 19.21,8 17,8Z" />
+                </svg>
+              </div>
+              <div className="forest-falling-leaf fl3">
+                <svg viewBox="0 0 24 24" fill="rgba(34, 197, 94, 0.4)" style={{ width: '12px', height: '12px' }}>
+                  <path d="M17,8C14.24,8 12.07,9.68 11.23,12H19.75C19.9,11.37 20,10.7 20,10C20,6 15,3 15,3C15,3 12,8 12,8H9V10H10.1C10.04,10.65 10,11.31 10,12C10,16.42 13.58,20 18,20C18,20 21,15 21,12C21,9.79 19.21,8 17,8Z" />
+                </svg>
+              </div>
             </div>
           )}
 
@@ -2659,7 +2678,7 @@ const DESTINATIONS = [
     title: 'Ancient Forest',
     location: 'Costa Rica Rain Forest',
     description: 'A peaceful rainforest sanctuary after a gentle rainfall. Crystal-clear stream, leaf drips, soft insects, glass & tree frogs, canopy breeze, creek splashes & distant howler monkey.',
-    image: '/costa_rica_ancient_forest.png',
+    image: '/costa_rica_ancient_forest_night.jpg',
     imageNight: '/costa_rica_ancient_forest_night.jpg',
     weather: 'Warm Rain 24°C',
     accentColor: '#4ade80', // Emerald Leaf Green
@@ -3473,6 +3492,191 @@ function App() {
                           opacity: isPlaying ? 0.35 : 0.15
                         }}
                       />
+                      {/* Costa Rica Ancient Forest 7-Layer Parallax Environment */}
+                      {activeDestination === 0 && (
+                        <div className="cr-rainforest-environment">
+                          {/* LAYER 7 – LIGHTING (Volumetric God Rays & Cloud Shadows) */}
+                          <div className="cr-layer layer-7-lighting">
+                            <div className="volumetric-god-rays" />
+                            <div className="canopy-cloud-shadow" />
+                          </div>
+
+                          {/* LAYER 6 – BACKGROUND CANOPY (Distant Birds & Rare Howler Monkey) */}
+                          <div className="cr-layer layer-6-canopy">
+                            <div className="distant-canopy-mist" />
+                            <div className="distant-bird-flock">
+                              <span className="distant-bird b1" />
+                              <span className="distant-bird b2" />
+                            </div>
+                            {/* Barely visible distant Howler Monkey silhouette */}
+                            <div className="howler-monkey-rare" title="Distant Howler Monkey">
+                              <svg viewBox="0 0 40 40" fill="rgba(15, 23, 20, 0.75)" style={{ width: '22px', height: '22px' }}>
+                                <path d="M20,10 C16,10 13,13 13,17 C13,19 14,21 16,22 C15,24 13,27 10,29 C8,30 6,32 8,34 C10,36 14,33 17,31 C19,33 21,34 24,34 C28,34 31,31 31,27 C31,23 28,20 26,19 C27,17 27,14 25,12 C23,10 21,10 20,10 Z" />
+                              </svg>
+                            </div>
+                          </div>
+
+                          {/* LAYER 5 – ATMOSPHERIC FX (Drifting Mist, Spores & Bioluminescent Glows) */}
+                          <div className="cr-layer layer-5-atmosphere">
+                            <div className="stream-mist-fx" />
+                            <div className="sun-particle-spores">
+                              <span className="spore s1" />
+                              <span className="spore s2" />
+                              <span className="spore s3" />
+                              <span className="spore s4" />
+                              <span className="spore s5" />
+                            </div>
+                            <div className="bioluminescent-glow-fx">
+                              <span className="firefly f1" />
+                              <span className="firefly f2" />
+                            </div>
+                          </div>
+
+                          {/* LAYER 4 – MIDGROUND JUNGLE (Breathing Ferns & Vines) */}
+                          <div className="cr-layer layer-4-midground">
+                            <div className="midground-jungle-breathe" />
+                          </div>
+
+                          {/* LAYER 3 – MAIN STREAM (40% importance - Flowing Water, Ripples, Shimmer) */}
+                          <div className="cr-layer layer-3-stream">
+                            <div className="diagonal-stream-flow" />
+                            <div className="stream-surface-shimmer" />
+                            <div className="stream-cyan-reflections" />
+                            <div className="stream-water-ripples">
+                              <span className="stream-ripple r-1" />
+                              <span className="stream-ripple r-2" />
+                            </div>
+                          </div>
+
+                          {/* LAYER 2 – STREAM BANK (Moss Rocks, Drifting Leaves, Tree Frog) */}
+                          <div className="cr-layer layer-2-streambank">
+                            <div className="moss-rock-bank" />
+                            <div className="drifting-leaf-stream" />
+                            {/* Partially visible Tree Frog near stream bank */}
+                            <div className="tree-frog-streambank" title="Tree Frog near stream bank">
+                              <svg viewBox="0 0 30 20" fill="rgba(34, 197, 94, 0.85)" style={{ width: '18px', height: '14px' }}>
+                                <ellipse cx="15" cy="10" rx="9" ry="6" />
+                                <circle cx="9" cy="5" r="3" fill="#22c55e" />
+                                <circle cx="21" cy="5" r="3" fill="#22c55e" />
+                              </svg>
+                            </div>
+                          </div>
+
+                          {/* LAYER 1 – FOREGROUND (Wet Tropical Leaves, Falling Water Droplets & Hidden Glass Frog) */}
+                          <div className="cr-layer layer-1-foreground">
+                            <div className="fg-tropical-leaf-left" />
+                            <div className="fg-tropical-leaf-right" />
+                            
+                            {/* Water Droplets Forming & Falling */}
+                            <div className="fg-leaf-droplet-drop">
+                              <span className="dew-drop d1" />
+                              <span className="dew-drop d2" />
+                            </div>
+
+                            {/* Hidden Glass Frog breathing & blinking on foreground leaf */}
+                            <div className="fg-glass-frog" title="Hidden Glass Frog">
+                              <svg viewBox="0 0 40 30" style={{ width: '28px', height: '22px' }}>
+                                <ellipse cx="20" cy="18" rx="12" ry="8" fill="rgba(74, 222, 128, 0.8)" stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" />
+                                <circle cx="13" cy="11" r="3.5" fill="rgba(134, 239, 172, 0.9)" />
+                                <circle cx="27" cy="11" r="3.5" fill="rgba(134, 239, 172, 0.9)" />
+                                <circle cx="13" cy="11" r="1.5" fill="#030205" className="frog-pupil-blink" />
+                                <circle cx="27" cy="11" r="1.5" fill="#030205" className="frog-pupil-blink" />
+                              </svg>
+                            </div>
+                          </div>
+
+                          {/* 1. Minimal Canopy Rain */}
+                          {(activeSounds.includes('canopy_rain') || activeSounds.includes('rain')) && isPlaying && (
+                            <div className="minimal-canopy-rain">
+                              <span className="rain-drop r1" />
+                              <span className="rain-drop r2" />
+                              <span className="rain-drop r3" />
+                              <span className="rain-drop r4" />
+                              <span className="rain-drop r5" />
+                              <span className="rain-drop r6" />
+                            </div>
+                          )}
+
+                          {/* 2. Leaf Drips */}
+                          {activeSounds.includes('leaf_drips') && isPlaying && (
+                            <div className="forest-drips-layer">
+                              {/* Rain falling drizzle */}
+                              <span className="forest-rain-drip rd1" />
+                              <span className="forest-rain-drip rd2" />
+                              <span className="forest-rain-drip rd3" />
+                              <span className="forest-rain-drip rd4" />
+                              
+                              {/* Falling leaves illustrations */}
+                              <div className="forest-falling-leaf fl1">
+                                <svg viewBox="0 0 24 24" fill="rgba(34, 197, 94, 0.5)" style={{ width: '16px', height: '16px' }}>
+                                  <path d="M17,8C14.24,8 12.07,9.68 11.23,12H19.75C19.9,11.37 20,10.7 20,10C20,6 15,3 15,3C15,3 12,8 12,8H9V10H10.1C10.04,10.65 10,11.31 10,12C10,16.42 13.58,20 18,20C18,20 21,15 21,12C21,9.79 19.21,8 17,8Z" />
+                                </svg>
+                              </div>
+                              <div className="forest-falling-leaf fl2">
+                                <svg viewBox="0 0 24 24" fill="rgba(74, 222, 128, 0.45)" style={{ width: '14px', height: '14px' }}>
+                                  <path d="M17,8C14.24,8 12.07,9.68 11.23,12H19.75C19.9,11.37 20,10.7 20,10C20,6 15,3 15,3C15,3 12,8 12,8H9V10H10.1C10.04,10.65 10,11.31 10,12C10,16.42 13.58,20 18,20C18,20 21,15 21,12C21,9.79 19.21,8 17,8Z" />
+                                </svg>
+                              </div>
+                              <div className="forest-falling-leaf fl3">
+                                <svg viewBox="0 0 24 24" fill="rgba(34, 197, 94, 0.4)" style={{ width: '12px', height: '12px' }}>
+                                  <path d="M17,8C14.24,8 12.07,9.68 11.23,12H19.75C19.9,11.37 20,10.7 20,10C20,6 15,3 15,3C15,3 12,8 12,8H9V10H10.1C10.04,10.65 10,11.31 10,12C10,16.42 13.58,20 18,20C18,20 21,15 21,12C21,9.79 19.21,8 17,8Z" />
+                                </svg>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 3. Waterfall Mist Shimmer */}
+                          {activeSounds.includes('waterfall') && isPlaying && (
+                            <div className="forest-waterfall-mist">
+                              <span className="mist-stream ms1" />
+                              <span className="mist-stream ms2" />
+                            </div>
+                          )}
+
+                          {/* 4. Tree Frogs Ripple Glow */}
+                          {activeSounds.includes('tree_frogs') && isPlaying && (
+                            <div className="forest-frogs-pulse">
+                              <span className="frog-glow fg1" />
+                              <span className="frog-glow fg2" />
+                            </div>
+                          )}
+
+                          {/* 5. Cicadas Sparkle Shimmer */}
+                          {activeSounds.includes('cicadas') && isPlaying && (
+                            <div className="forest-cicadas-sparkle">
+                              <span className="sparkle sp1" />
+                              <span className="sparkle sp2" />
+                              <span className="sparkle sp3" />
+                            </div>
+                          )}
+
+                          {/* 6. Macaw Calls Flight */}
+                          {activeSounds.includes('macaw_calls') && isPlaying && (
+                            <div className="forest-macaw-flight">
+                              <svg viewBox="0 0 60 30" fill="#ef4444" style={{ width: '45px', height: '22px' }}>
+                                <path d="M10,15 Q25,2 40,15 Q55,2 58,12 Q45,20 30,17 Q15,20 10,15 Z" />
+                              </svg>
+                            </div>
+                          )}
+
+                          {/* 7. Jungle Breeze Sway */}
+                          {activeSounds.includes('jungle_breeze') && isPlaying && (
+                            <div className="forest-breeze-overlay">
+                              <div className="breeze-wave bw1" />
+                              <div className="breeze-wave bw2" />
+                            </div>
+                          )}
+
+                          {/* 8. Howler Calls Echo Rings */}
+                          {(activeSounds.includes('howler_calls') || activeSounds.includes('howler_monkey')) && isPlaying && (
+                            <div className="forest-howler-echo">
+                              <span className="echo-ring er1" />
+                              <span className="echo-ring er2" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Night Desert Animations inside phone preview */}
                       {activeDestination === 1 && (
                         <div className="dunes-desert-environment">
