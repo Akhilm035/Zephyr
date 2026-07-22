@@ -46,6 +46,11 @@ class AmbientSynthEngine {
     this.fireTimeout = null;
     this.birdsTimeout = null;
     this.musicTimeout = null;
+    this.pnwDripsTimeout = null;
+    this.pnwFrogsTimeout = null;
+    this.pnwBirdsTimeout = null;
+    this.pnwFoghornTimeout = null;
+    this.photographTimeout = null;
   }
 
   init() {
@@ -1532,6 +1537,328 @@ class AmbientSynthEngine {
        };
        this.falconTimeout = setTimeout(playFalcon, 8000 + Math.random() * 8000);
     }
+    else if (soundId === 'pnw_rain') {
+      // Forest Rain: filtered white noise mimicking soft evergreen rain
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const whiteNoise = this.ctx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      const lowpass = this.ctx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 1100;
+
+      const bandpass = this.ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.value = 1800;
+      bandpass.Q.value = 1.0;
+
+      whiteNoise.connect(lowpass);
+      lowpass.connect(bandpass);
+      bandpass.connect(gainNode);
+      whiteNoise.start();
+      sourceNodes.push(whiteNoise);
+    }
+    else if (soundId === 'pnw_creek') {
+      // Creek Flow: organic water trickling (swept bandpass filtered noise)
+      const bufferSize = 2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const bandpass = this.ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.value = 650;
+      bandpass.Q.value = 2.5;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.25; // water ripple rate
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 250;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(bandpass.frequency);
+
+      noise.connect(bandpass);
+      bandpass.connect(gainNode);
+
+      lfo.start();
+      noise.start();
+      sourceNodes.push(noise, lfo);
+    }
+    else if (soundId === 'pnw_drips') {
+      // Cedar Drips: random large water drops falling from canopy
+      const playDrips = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const pitch = 220 + Math.random() * 180;
+
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(pitch * 2.5, now + 0.08);
+
+        const dGain = this.ctx.createGain();
+        dGain.gain.setValueAtTime(0, now);
+        dGain.gain.linearRampToValueAtTime(0.2, now + 0.005);
+        dGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+        osc.connect(dGain);
+        dGain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.1);
+
+        const nextTime = 1500 + Math.random() * 3500;
+        this.pnwDripsTimeout = setTimeout(playDrips, nextTime);
+      };
+      playDrips();
+    }
+    else if (soundId === 'pnw_breeze') {
+      // Coastal Breeze: wind moving through cedar canopy
+      const bufferSize = 3 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const lowpass = this.ctx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 250;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.04; // slow coastal wind cycle
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 80;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(lowpass.frequency);
+
+      noise.connect(lowpass);
+      lowpass.connect(gainNode);
+
+      lfo.start();
+      noise.start();
+      sourceNodes.push(noise, lfo);
+    }
+    else if (soundId === 'pnw_swell') {
+      // Ocean Swell: deep, distant waves rolling in
+      const bufferSize = 4 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const lowpass = this.ctx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.value = 80; // deep bass rumble
+
+      const swellLFO = this.ctx.createOscillator();
+      swellLFO.frequency.value = 0.12; // slow 8-second swell cycle
+      const swellGain = this.ctx.createGain();
+      swellGain.gain.value = 45;
+
+      swellLFO.connect(swellGain);
+      swellGain.connect(lowpass.frequency);
+
+      const ampLFO = this.ctx.createOscillator();
+      ampLFO.frequency.value = 0.12;
+      const ampGain = this.ctx.createGain();
+      ampGain.gain.value = 0.45;
+      
+      const masterSwellGain = this.ctx.createGain();
+      masterSwellGain.gain.setValueAtTime(0.55, this.ctx.currentTime);
+      
+      ampLFO.connect(ampGain);
+      ampGain.connect(masterSwellGain.gain);
+
+      noise.connect(lowpass);
+      lowpass.connect(masterSwellGain);
+      masterSwellGain.connect(gainNode);
+
+      swellLFO.start();
+      ampLFO.start();
+      noise.start();
+      sourceNodes.push(noise, swellLFO, ampLFO);
+    }
+    else if (soundId === 'pnw_frogs') {
+      // Tree Frogs: soft chorusing winks
+      const playFrogs = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const chirpCount = 4 + Math.floor(Math.random() * 3);
+        const baseFreq = 1600 + Math.random() * 200;
+
+        for (let i = 0; i < chirpCount; i++) {
+          const t = now + i * 0.15;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(baseFreq, t);
+          osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.85, t + 0.08);
+
+          const fGain = this.ctx.createGain();
+          fGain.gain.setValueAtTime(0, t);
+          fGain.gain.linearRampToValueAtTime(0.12, t + 0.005);
+          fGain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+
+          osc.connect(fGain);
+          fGain.connect(gainNode);
+          osc.start(t);
+          osc.stop(t + 0.1);
+        }
+
+        const nextTime = 4000 + Math.random() * 5000;
+        this.pnwFrogsTimeout = setTimeout(playFrogs, nextTime);
+      };
+      playFrogs();
+    }
+    else if (soundId === 'pnw_birds') {
+      // Songbirds: infrequent thrushes & wrens
+      const playBirds = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const noteCount = 3 + Math.floor(Math.random() * 4);
+        const basePitch = 2200 + Math.random() * 1200;
+
+        for (let i = 0; i < noteCount; i++) {
+          const t = now + i * 0.25;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(basePitch, t);
+          osc.frequency.exponentialRampToValueAtTime(basePitch * (1.1 - Math.random() * 0.3), t + 0.18);
+
+          const bGain = this.ctx.createGain();
+          bGain.gain.setValueAtTime(0, t);
+          bGain.gain.linearRampToValueAtTime(0.04, t + 0.01);
+          bGain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+
+          osc.connect(bGain);
+          bGain.connect(gainNode);
+          osc.start(t);
+          osc.stop(t + 0.22);
+        }
+
+        const nextTime = 18000 + Math.random() * 15000;
+        this.pnwBirdsTimeout = setTimeout(playBirds, nextTime);
+      };
+      this.pnwBirdsTimeout = setTimeout(playBirds, 6000 + Math.random() * 6000);
+    }
+    else if (soundId === 'pnw_foghorn') {
+      // Fog Horn Echo: very rare, low-frequency atmospheric coast warning
+      const playFoghorn = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+
+        // Dual sine oscillators at 92Hz & 138Hz to create a natural hollow fifth chord
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        osc1.type = 'sine';
+        osc2.type = 'sine';
+        osc1.frequency.setValueAtTime(92, now);
+        osc2.frequency.setValueAtTime(138, now);
+
+        const hornFilter = this.ctx.createBiquadFilter();
+        hornFilter.type = 'lowpass';
+        hornFilter.frequency.setValueAtTime(220, now);
+
+        const envelope = this.ctx.createGain();
+        envelope.gain.setValueAtTime(0, now);
+        envelope.gain.linearRampToValueAtTime(0.25, now + 0.6); // slow swelling attack
+        envelope.gain.setValueAtTime(0.25, now + 2.2);
+        envelope.gain.exponentialRampToValueAtTime(0.001, now + 3.8); // long decaying echo
+
+        osc1.connect(hornFilter);
+        osc2.connect(hornFilter);
+        hornFilter.connect(envelope);
+        envelope.connect(gainNode);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 4.0);
+        osc2.stop(now + 4.0);
+
+        const nextTime = 35000 + Math.random() * 25000;
+        this.pnwFoghornTimeout = setTimeout(playFoghorn, nextTime);
+      };
+      this.pnwFoghornTimeout = setTimeout(playFoghorn, 12000 + Math.random() * 12000);
+    }
+    else if (soundId === 'photograph_noham_st_pierre') {
+      // Photograph by Noham St Pierre: nostalgic, slow cinematic ambient piano track
+      const playLoop = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+
+        // Melancholic 4-chord progression (slow tempo: 8.5 seconds per chord change)
+        const chords = [
+          [130.81, 196.00, 246.94, 293.66, 329.63], // Cmaj9 (C3, G3, B3, D4, E4)
+          [110.00, 164.81, 220.00, 261.63, 311.13], // Am9 (A2, E3, A3, C4, D#4/E4)
+          [87.31,  174.61, 218.27, 261.63, 349.23], // Fmaj9 (F2, F3, A3, C4, F4)
+          [98.00,  146.83, 196.00, 246.94, 392.00]  // G13 (G2, D3, G3, B3, G4)
+        ];
+
+        const chordIndex = Math.floor(now / 8.5) % chords.length;
+        const activeChord = chords[chordIndex];
+
+        // Play each note in the chord with a slight stagger/arpeggio delay to simulate organic touch
+        activeChord.forEach((freq, idx) => {
+          const noteTime = now + idx * 0.18; // soft arpeggiation
+
+          // Dual sine carrier for soft piano feel
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, noteTime);
+
+          const lowpass = this.ctx.createBiquadFilter();
+          lowpass.type = 'lowpass';
+          lowpass.frequency.setValueAtTime(450, noteTime); // warm, muted piano profile
+
+          const pluckGain = this.ctx.createGain();
+          pluckGain.gain.setValueAtTime(0, noteTime);
+          pluckGain.gain.linearRampToValueAtTime(0.24, noteTime + 0.08); // slow soft attack
+          pluckGain.gain.exponentialRampToValueAtTime(0.001, noteTime + 5.2); // long sustain decay
+
+          // Delay effect line
+          const delayNode = this.ctx.createDelay(8.0);
+          delayNode.delayTime.setValueAtTime(1.8, noteTime); // spacious echo
+          const delayGain = this.ctx.createGain();
+          delayGain.gain.setValueAtTime(0.28, noteTime); // feedback gain
+
+          osc.connect(lowpass);
+          lowpass.connect(pluckGain);
+          pluckGain.connect(gainNode);
+
+          // Connect to feedback delay loop
+          pluckGain.connect(delayNode);
+          delayNode.connect(delayGain);
+          delayGain.connect(gainNode);
+          delayGain.connect(delayNode); // feedback
+
+          osc.start(noteTime);
+          osc.stop(noteTime + 6.0);
+        });
+
+        // Slow pulse rate
+        this.photographTimeout = setTimeout(playLoop, 8500);
+      };
+      playLoop();
+    }
 
     this.sources[soundId] = sourceNodes;
   }
@@ -1563,6 +1890,13 @@ class AmbientSynthEngine {
     if (soundId === 'soft_songbirds') clearTimeout(this.softSongbirdsTimeout);
     if (soundId === 'aeolian_harp') clearTimeout(this.aeolianHarpTimeout);
     if (soundId === 'windstorm_erik_reno') clearTimeout(this.windstormErikRenoTimeout);
+    
+    // Pacific Northwest sound timeouts
+    if (soundId === 'pnw_drips') clearTimeout(this.pnwDripsTimeout);
+    if (soundId === 'pnw_frogs') clearTimeout(this.pnwFrogsTimeout);
+    if (soundId === 'pnw_birds') clearTimeout(this.pnwBirdsTimeout);
+    if (soundId === 'pnw_foghorn') clearTimeout(this.pnwFoghornTimeout);
+    if (soundId === 'photograph_noham_st_pierre') clearTimeout(this.photographTimeout);
     
     if (soundId === 'thunder') clearTimeout(this.thunderTimeout);
     if (soundId === 'fire' || soundId === 'campfire') {
@@ -1612,7 +1946,8 @@ function MobileHeroView({
   toggleSound,
   soundVolumes,
   handleVolumeChange,
-  timeLeft
+  timeLeft,
+  isNight
 }) {
   const [localTime, setLocalTime] = useState('')
   const [localDate, setLocalDate] = useState('')
@@ -1739,55 +2074,91 @@ function MobileHeroView({
       onTouchEnd={handleTouchEnd}
     >
       {/* Immersive background layers with smooth crossfade */}
-      {DESTINATIONS.map((item, idx) => (
-        <div 
-          key={item.id}
-          className={`mobile-hero-bg ${idx === activeDestination ? 'active' : ''}`}
-          style={{ backgroundImage: `url(${item.image})` }}
-        />
-      ))}
+      {DESTINATIONS.map((item, idx) => {
+        const bgImg = (isNight && item.imageNight) ? item.imageNight : item.image;
+        return (
+          <div 
+            key={item.id}
+            className={`mobile-hero-bg ${idx === activeDestination ? 'active' : ''}`}
+            style={{ backgroundImage: `url(${bgImg})` }}
+          />
+        );
+      })}
 
       {/* Sun/Moon light glow overlay */}
       <div className={`mobile-hero-glow ${activeDestination === 1 ? 'dunes' : activeDestination === 2 ? 'alpine' : activeDestination === 0 ? 'forest' : 'ambient'}`} />
       
-      {/* Night Desert Animations */}
+      {/* Night Desert Immersive Environment Animations */}
       {activeDestination === 1 && (
-        <>
+        <div className="dunes-desert-environment">
           <div className="dunes-moon-glow" />
-          
-          {/* Campfire glow & rising sparks only when fire sound is selected */}
-          {activeSounds.includes('campfire') && (
-            <>
-              <div className="dunes-fire-glow" />
-              <div className="desert-sparks-overlay">
-                <div className="spark-particle s-1" />
-                <div className="spark-particle s-2" />
-                <div className="spark-particle s-3" />
-                <div className="spark-particle s-4" />
-                <div className="spark-particle s-5" />
-              </div>
-            </>
-          )}
 
-          {/* Floating music notes only when oud or ney sound is selected */}
-          {(activeSounds.includes('oud') || activeSounds.includes('ney')) && (
-            <div className="dunes-music-notes-overlay">
-              <div className="music-note n-1">♪</div>
-              <div className="music-note n-2">♫</div>
-              <div className="music-note n-3">♩</div>
-              <div className="music-note n-4">♬</div>
+          {/* 1. Desert Wind */}
+          {activeSounds.includes('dunes_wind') && isPlaying && (
+            <div className="dunes-wind-layer">
+              <div className="dunes-wind-sweep" />
             </div>
           )}
 
-          {/* Animated wind haze sweeps only when wind sound is selected */}
-          {activeSounds.includes('dunes_wind') && (
-            <div className="dunes-wind-overlay">
-              <div className="wind-haze-sweep h-1" />
-              <div className="wind-haze-sweep h-2" />
-              <div className="wind-haze-sweep h-3" />
+          {/* 2. Sand Whisper */}
+          {activeSounds.includes('sand_whisper') && isPlaying && (
+            <div className="dunes-sand-layer">
+              <span className="dunes-sand-grain sg1" />
+              <span className="dunes-sand-grain sg2" />
             </div>
           )}
-        </>
+
+          {/* 3. Oasis Water Ripples */}
+          {activeSounds.includes('oasis_ripples') && isPlaying && (
+            <div className="dunes-oasis-layer">
+              <span className="dunes-oasis-ripple or1" />
+              <span className="dunes-oasis-ripple or2" />
+            </div>
+          )}
+
+          {/* 4. Campfire Glow */}
+          {activeSounds.includes('campfire_glow') && isPlaying && (
+            <div className="dunes-campfire-layer">
+              <div className="dunes-fire-glow-aura" />
+              <span className="dunes-fire-spark sp1" />
+              <span className="dunes-fire-spark sp2" />
+            </div>
+          )}
+
+          {/* 5. Tent Flutter */}
+          {activeSounds.includes('tent_flutter') && isPlaying && (
+            <div className="dunes-tent-flutter-layer" />
+          )}
+
+          {/* 6. Desert Night Insects */}
+          {activeSounds.includes('desert_insects') && isPlaying && (
+            <div className="dunes-insects-layer">
+              <span className="dunes-bug-glow bg1" />
+              <span className="dunes-bug-glow bg2" />
+            </div>
+          )}
+
+          {/* 7. Ney Flute Echo */}
+          {activeSounds.includes('ney_echo') && isPlaying && (
+            <div className="dunes-ney-layer">
+              <div className="dunes-ney-glow" />
+            </div>
+          )}
+
+          {/* 8. Camel Bells */}
+          {activeSounds.includes('camel_bells') && isPlaying && (
+            <div className="dunes-camel-layer">
+              <div className="dunes-camel-drift" />
+            </div>
+          )}
+
+          {/* 9. Leben by Dieter Huber */}
+          {activeSounds.includes('leben_dieter_huber') && isPlaying && (
+            <div className="dunes-leben-layer">
+              <div className="dunes-leben-aurora" />
+            </div>
+          )}
+        </div>
       )}
       
       {/* Costa Rica Ancient Forest 7-Layer Parallax Environment */}
@@ -1948,9 +2319,140 @@ function MobileHeroView({
 
           {/* 8. Howler Calls Echo Rings */}
           {(activeSounds.includes('howler_calls') || activeSounds.includes('howler_monkey')) && isPlaying && (
-            <div className="forest-howler-echo">
+          <div className="forest-howler-echo">
               <span className="echo-ring er1" />
               <span className="echo-ring er2" />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Mountain Valley (Alpine Peaks) Parallax & Sound Environment Animations */}
+      {activeDestination === 2 && (
+        <div className="mv-valley-environment">
+          {/* 1. Mountain Stream (constant anchor) */}
+          {activeSounds.includes('mountain_stream') && isPlaying && (
+            <div className="mv-stream-layer">
+              <span className="mv-stream-flow" />
+              <span className="mv-stream-shimmer" />
+            </div>
+          )}
+
+          {/* 2. Alpine Breeze */}
+          {activeSounds.includes('alpine_breeze') && isPlaying && (
+            <div className="mv-breeze-layer">
+              <div className="mv-breeze-sweep" />
+            </div>
+          )}
+
+          {/* 3. Pine Rustle */}
+          {activeSounds.includes('pine_rustle') && isPlaying && (
+            <div className="mv-pine-sway-layer" />
+          )}
+
+          {/* 4. Creek Pebbles */}
+          {activeSounds.includes('creek_pebbles') && isPlaying && (
+            <div className="mv-pebbles-splashes">
+              <span className="mv-pebble-ripple r1" />
+              <span className="mv-pebble-ripple r2" />
+            </div>
+          )}
+
+          {/* 5. Distant Waterfall */}
+          {activeSounds.includes('distant_waterfall') && isPlaying && (
+            <div className="mv-waterfall-mist">
+              <div className="mv-mist-shimmer" />
+            </div>
+          )}
+
+          {/* 6. Meadow Grass */}
+          {activeSounds.includes('meadow_grass') && isPlaying && (
+            <div className="mv-meadow-layer">
+              <div className="mv-grass-blade gb1" />
+              <div className="mv-grass-blade gb2" />
+            </div>
+          )}
+
+          {/* 7. Soft Songbirds */}
+          {activeSounds.includes('soft_songbirds') && isPlaying && (
+            <div className="mv-bird-flight">
+              <div className="mv-bird-light-point" />
+            </div>
+          )}
+
+          {/* 8. Aeolian Harp Echo */}
+          {activeSounds.includes('aeolian_harp') && isPlaying && (
+            <div className="mv-aeolian-layer">
+              <span className="mv-harp-swell" />
+            </div>
+          )}
+
+          {/* 9. Windstorm by Erik Reno */}
+          {activeSounds.includes('windstorm_erik_reno') && isPlaying && (
+            <div className="mv-guitar-swells">
+              <div className="mv-guitar-aura" />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Pacific Northwest (Misty Coastline) Immersive Sound Environment Animations */}
+      {activeDestination === 3 && (
+        <div className="pnw-coastal-environment">
+          {/* 1. Forest Rain (constant anchor) */}
+          {activeSounds.includes('pnw_rain') && isPlaying && (
+            <div className="pnw-rain-layer">
+              <span className="pnw-rain-drizzle r1" />
+              <span className="pnw-rain-drizzle r2" />
+            </div>
+          )}
+
+          {/* 2. Creek Flow */}
+          {activeSounds.includes('pnw_creek') && isPlaying && (
+            <div className="pnw-creek-layer">
+              <span className="pnw-creek-shimmer" />
+            </div>
+          )}
+
+          {/* 3. Cedar Drips */}
+          {activeSounds.includes('pnw_drips') && isPlaying && (
+            <div className="pnw-drips-layer">
+              <span className="pnw-drip-point dp1" />
+              <span className="pnw-drip-point dp2" />
+            </div>
+          )}
+
+          {/* 4. Coastal Breeze */}
+          {activeSounds.includes('pnw_breeze') && isPlaying && (
+            <div className="pnw-breeze-layer">
+              <div className="pnw-breeze-sweep" />
+            </div>
+          )}
+
+          {/* 5. Ocean Swell (breath background) */}
+          {activeSounds.includes('pnw_swell') && isPlaying && (
+            <div className="pnw-ocean-layer" />
+          )}
+
+          {/* 6. Tree Frogs */}
+          {activeSounds.includes('pnw_frogs') && isPlaying && (
+            <div className="pnw-frogs-layer">
+              <span className="pnw-frog-glow fg1" />
+              <span className="pnw-frog-glow fg2" />
+            </div>
+          )}
+
+          {/* 7. Songbirds */}
+          {activeSounds.includes('pnw_birds') && isPlaying && (
+            <div className="pnw-birds-layer">
+              <div className="pnw-bird-glide" />
+            </div>
+          )}
+
+          {/* 8. Fog Horn Echo */}
+          {activeSounds.includes('pnw_foghorn') && isPlaying && (
+            <div className="pnw-foghorn-layer">
+              <div className="pnw-horn-swell" />
             </div>
           )}
         </div>
@@ -1965,21 +2467,6 @@ function MobileHeroView({
         <div className="mobile-snow-overlay" />
       )}
 
-      {/* Floating Animated Silhouettes - Camels move only when bells sound is active */}
-      {activeDestination === 1 && activeSounds.includes('camel_bells') && (
-        <div className="mobile-camel-caravan">
-          <svg viewBox="0 0 100 40" fill="currentColor" style={{ width: '80px', height: '30px' }}>
-            <path d="M15,25 Q17,20 18,22 T20,20 T22,23 T25,25 L26,35 L24,35 L23,28 L21,28 L20,35 L18,35 Z" />
-            <path d="M25,25 Q30,22 35,23" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-            <path d="M35,23 Q37,18 38,20 T40,18 T42,21 T45,23 L46,33 L44,33 L43,26 L41,26 L40,33 L38,33 Z" />
-            <path d="M45,23 Q50,24 55,25" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-            <path d="M55,25 Q57,20 58,22 T60,20 T62,23 T65,25 L66,35 L64,35 L63,28 L61,28 L60,35 L58,35 Z" />
-            <path d="M15,25 Q10,25 6,27" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-            <circle cx="5" cy="24" r="1.5" />
-            <path d="M3,26 L7,26 L8,35 L3,35 Z" />
-          </svg>
-        </div>
-      )}
 
       {/* Interactive Touch Slider Container */}
       <div 
@@ -2234,16 +2721,27 @@ const DESTINATIONS = [
     }
   },
   {
-    id: 'campfire',
-    title: 'Campfire Night',
+    id: 'pnw',
+    title: 'Misty Coastline',
     location: 'Pacific Northwest',
-    description: 'Cracking pine logs under an old-growth redwood sky, accompanied by crickets and warm guitar chords.',
-    image: '/better_sleep.png',
-    weather: 'Clear Twilight 12°C',
-    accentColor: '#f97316', // Ember Fire Coral
-    glowColor: 'rgba(249, 115, 22, 0.55)',
-    sounds: ['Campfire', 'Crickets', 'Acoustic Lofi'],
-    volPreset: { fire: 80, music: 45, wind: 20 }
+    description: 'An ancient cedar and Douglas fir forest overlooking a misty coastline. Gentle forest rain falls through towers of evergreens as the ocean waves swell in the distance.',
+    image: '/pacific_northwest_day.jpg',
+    imageNight: '/pacific_northwest_night.jpg',
+    weather: 'Misty Rain 12°C',
+    accentColor: '#0ea5e9', // Coastal Blue/Cyan
+    glowColor: 'rgba(14, 165, 233, 0.5)',
+    sounds: ['Forest Rain', 'Creek Flow', 'Cedar Drips', 'Coastal Breeze', 'Ocean Swell', 'Tree Frogs', 'Songbirds', 'Fog Horn Echo', 'Photograph by Noham St Pierre'],
+    volPreset: {
+      pnw_rain: 35,
+      pnw_creek: 22,
+      pnw_drips: 12,
+      pnw_breeze: 10,
+      pnw_swell: 8,
+      pnw_frogs: 5,
+      pnw_birds: 5,
+      pnw_foghorn: 3,
+      photograph_noham_st_pierre: 30
+    }
   },
   {
     id: 'ocean',
@@ -2377,14 +2875,17 @@ const getMixSounds = (activeDest) => {
       { id: 'windstorm_erik_reno', name: 'Windstorm by Erik Reno', icon: Music, color: '#f472b6' }
     ];
   } else if (activeDest === 3) {
-    // Campfire Night
+    // Pacific Northwest (Misty Coastline)
     return [
-      { id: 'fire', name: 'Campfire', icon: Flame, color: '#f97316' },
-      { id: 'crickets', name: 'Crickets', icon: Volume2, color: '#34d399' },
-      { id: 'music', name: 'Acoustic Guitar', icon: Music, color: '#c084fc' },
-      { id: 'wind', name: 'Pine Wind', icon: Wind, color: '#cbd5e1' },
-      { id: 'night_ambient', name: 'Night Drone', icon: Moon, color: '#38bdf8' },
-      { id: 'rain', name: 'Soft Drizzle', icon: CloudRain, color: '#60a5fa' }
+      { id: 'pnw_rain', name: 'Forest Rain', icon: CloudRain, color: '#38bdf8' },
+      { id: 'pnw_creek', name: 'Creek Flow', icon: Droplet, color: '#60a5fa' },
+      { id: 'pnw_drips', name: 'Cedar Drips', icon: CloudRain, color: '#4ade80' },
+      { id: 'pnw_breeze', name: 'Coastal Breeze', icon: Wind, color: '#cbd5e1' },
+      { id: 'pnw_swell', name: 'Ocean Swell', icon: Activity, color: '#0ea5e9' },
+      { id: 'pnw_frogs', name: 'Tree Frogs', icon: Volume2, color: '#22c55e' },
+      { id: 'pnw_birds', name: 'Songbirds', icon: BirdIcon, color: '#facc15' },
+      { id: 'pnw_foghorn', name: 'Fog Horn Echo', icon: Volume2, color: '#a7f3d0' },
+      { id: 'photograph_noham_st_pierre', name: 'Photograph by Noham St Pierre', icon: Music, color: '#f472b6' }
     ];
   } else if (activeDest === 4) {
     // Deep Ocean
@@ -2759,6 +3260,8 @@ function App() {
       activeKeys = [primarySound, 'leben_dieter_huber']
     } else if (index === 2) {
       activeKeys = [primarySound, 'windstorm_erik_reno']
+    } else if (index === 3) {
+      activeKeys = [primarySound, 'photograph_noham_st_pierre']
     }
     setActiveSounds(activeKeys)
     setSoundVolumes((prev) => {
@@ -2909,6 +3412,7 @@ function App() {
             soundVolumes={soundVolumes}
             handleVolumeChange={handleVolumeChange}
             timeLeft={timeLeft}
+            isNight={isNight}
           />
         ) : (
           <section className="hero-section">
@@ -2960,71 +3464,216 @@ function App() {
                       <div
                         className="phone-screen-ambient-bg"
                         style={{
-                          backgroundImage: `url(${DESTINATIONS[activeDestination].image})`,
+                          backgroundImage: `url(${
+                            (isNight && DESTINATIONS[activeDestination].imageNight)
+                              ? DESTINATIONS[activeDestination].imageNight
+                              : DESTINATIONS[activeDestination].image
+                          })`,
                           opacity: isPlaying ? 0.35 : 0.15
                         }}
                       />
                       {/* Night Desert Animations inside phone preview */}
                       {activeDestination === 1 && (
-                        <>
+                        <div className="dunes-desert-environment">
                           <div className="dunes-moon-glow" />
-                          
-                          {/* Campfire glow & rising sparks only when fire sound is selected */}
-                          {activeSounds.includes('fire') && (
-                            <>
-                              <div className="dunes-fire-glow" />
-                              <div className="desert-sparks-overlay">
-                                <div className="spark-particle s-1" />
-                                <div className="spark-particle s-2" />
-                                <div className="spark-particle s-3" />
-                                <div className="spark-particle s-4" />
-                                <div className="spark-particle s-5" />
-                              </div>
-                            </>
-                          )}
 
-                          {/* Floating music notes only when oud or ney sound is selected */}
-                          {(activeSounds.includes('oud') || activeSounds.includes('ney')) && (
-                            <div className="dunes-music-notes-overlay">
-                              <div className="music-note n-1">♪</div>
-                              <div className="music-note n-2">♫</div>
-                              <div className="music-note n-3">♩</div>
-                              <div className="music-note n-4">♬</div>
+                          {/* 1. Desert Wind */}
+                          {activeSounds.includes('dunes_wind') && isPlaying && (
+                            <div className="dunes-wind-layer">
+                              <div className="dunes-wind-sweep" />
                             </div>
                           )}
 
-                          {/* Floating Animated Silhouettes - Camels move only when bells sound is active */}
-                          {activeSounds.includes('camel_bells') && (
-                            <div className="mobile-camel-caravan">
-                              <svg viewBox="0 0 100 40" fill="currentColor" style={{ width: '80px', height: '30px' }}>
-                                {/* Camel 1 */}
-                                <path d="M15,25 Q17,20 18,22 T20,20 T22,23 T25,25 L26,35 L24,35 L23,28 L21,28 L20,35 L18,35 Z" />
-                                {/* Rope 1-2 */}
-                                <path d="M25,25 Q30,22 35,23" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-                                {/* Camel 2 */}
-                                <path d="M35,23 Q37,18 38,20 T40,18 T42,21 T45,23 L46,33 L44,33 L43,26 L41,26 L40,33 L38,33 Z" />
-                                {/* Rope 2-3 */}
-                                <path d="M45,23 Q50,24 55,25" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-                                {/* Camel 3 */}
-                                <path d="M55,25 Q57,20 58,22 T60,20 T62,23 T65,25 L66,35 L64,35 L63,28 L61,28 L60,35 L58,35 Z" />
-                                {/* Lead Rope */}
-                                <path d="M15,25 Q10,25 6,27" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
-                                {/* Guide Person leading caravan */}
-                                <circle cx="5" cy="24" r="1.5" />
-                                <path d="M3,26 L7,26 L8,35 L3,35 Z" />
-                              </svg>
+                          {/* 2. Sand Whisper */}
+                          {activeSounds.includes('sand_whisper') && isPlaying && (
+                            <div className="dunes-sand-layer">
+                              <span className="dunes-sand-grain sg1" />
+                              <span className="dunes-sand-grain sg2" />
                             </div>
                           )}
 
-                          {/* Animated wind haze sweeps only when wind sound is selected */}
-                          {activeSounds.includes('dunes_wind') && (
-                            <div className="dunes-wind-overlay">
-                              <div className="wind-haze-sweep h-1" />
-                              <div className="wind-haze-sweep h-2" />
-                              <div className="wind-haze-sweep h-3" />
+                          {/* 3. Oasis Water Ripples */}
+                          {activeSounds.includes('oasis_ripples') && isPlaying && (
+                            <div className="dunes-oasis-layer">
+                              <span className="dunes-oasis-ripple or1" />
+                              <span className="dunes-oasis-ripple or2" />
                             </div>
                           )}
-                        </>
+
+                          {/* 4. Campfire Glow */}
+                          {activeSounds.includes('campfire_glow') && isPlaying && (
+                            <div className="dunes-campfire-layer">
+                              <div className="dunes-fire-glow-aura" />
+                              <span className="dunes-fire-spark sp1" />
+                              <span className="dunes-fire-spark sp2" />
+                            </div>
+                          )}
+
+                          {/* 5. Tent Flutter */}
+                          {activeSounds.includes('tent_flutter') && isPlaying && (
+                            <div className="dunes-tent-flutter-layer" />
+                          )}
+
+                          {/* 6. Desert Night Insects */}
+                          {activeSounds.includes('desert_insects') && isPlaying && (
+                            <div className="dunes-insects-layer">
+                              <span className="dunes-bug-glow bg1" />
+                              <span className="dunes-bug-glow bg2" />
+                            </div>
+                          )}
+
+                          {/* 7. Ney Flute Echo */}
+                          {activeSounds.includes('ney_echo') && isPlaying && (
+                            <div className="dunes-ney-layer">
+                              <div className="dunes-ney-glow" />
+                            </div>
+                          )}
+
+                          {/* 8. Camel Bells */}
+                          {activeSounds.includes('camel_bells') && isPlaying && (
+                            <div className="dunes-camel-layer">
+                              <div className="dunes-camel-drift" />
+                            </div>
+                          )}
+
+                          {/* 9. Leben by Dieter Huber */}
+                          {activeSounds.includes('leben_dieter_huber') && isPlaying && (
+                            <div className="dunes-leben-layer">
+                              <div className="dunes-leben-aurora" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Mountain Valley (Alpine Peaks) Parallax & Sound Environment Animations */}
+                      {activeDestination === 2 && (
+                        <div className="mv-valley-environment">
+                          {/* 1. Mountain Stream (constant anchor) */}
+                          {activeSounds.includes('mountain_stream') && isPlaying && (
+                            <div className="mv-stream-layer">
+                              <span className="mv-stream-flow" />
+                              <span className="mv-stream-shimmer" />
+                            </div>
+                          )}
+
+                          {/* 2. Alpine Breeze */}
+                          {activeSounds.includes('alpine_breeze') && isPlaying && (
+                            <div className="mv-breeze-layer">
+                              <div className="mv-breeze-sweep" />
+                            </div>
+                          )}
+
+                          {/* 3. Pine Rustle */}
+                          {activeSounds.includes('pine_rustle') && isPlaying && (
+                            <div className="mv-pine-sway-layer" />
+                          )}
+
+                          {/* 4. Creek Pebbles */}
+                          {activeSounds.includes('creek_pebbles') && isPlaying && (
+                            <div className="mv-pebbles-splashes">
+                              <span className="mv-pebble-ripple r1" />
+                              <span className="mv-pebble-ripple r2" />
+                            </div>
+                          )}
+
+                          {/* 5. Distant Waterfall */}
+                          {activeSounds.includes('distant_waterfall') && isPlaying && (
+                            <div className="mv-waterfall-mist">
+                              <div className="mv-mist-shimmer" />
+                            </div>
+                          )}
+
+                          {/* 6. Meadow Grass */}
+                          {activeSounds.includes('meadow_grass') && isPlaying && (
+                            <div className="mv-meadow-layer">
+                              <div className="mv-grass-blade gb1" />
+                              <div className="mv-grass-blade gb2" />
+                            </div>
+                          )}
+
+                          {/* 7. Soft Songbirds */}
+                          {activeSounds.includes('soft_songbirds') && isPlaying && (
+                            <div className="mv-bird-flight">
+                              <div className="mv-bird-light-point" />
+                            </div>
+                          )}
+
+                          {/* 8. Aeolian Harp Echo */}
+                          {activeSounds.includes('aeolian_harp') && isPlaying && (
+                            <div className="mv-aeolian-layer">
+                              <span className="mv-harp-swell" />
+                            </div>
+                          )}
+
+                          {/* 9. Windstorm by Erik Reno */}
+                          {activeSounds.includes('windstorm_erik_reno') && isPlaying && (
+                            <div className="mv-guitar-swells">
+                              <div className="mv-guitar-aura" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Pacific Northwest (Misty Coastline) Immersive Sound Environment Animations */}
+                      {activeDestination === 3 && (
+                        <div className="pnw-coastal-environment">
+                          {/* 1. Forest Rain (constant anchor) */}
+                          {activeSounds.includes('pnw_rain') && isPlaying && (
+                            <div className="pnw-rain-layer">
+                              <span className="pnw-rain-drizzle r1" />
+                              <span className="pnw-rain-drizzle r2" />
+                            </div>
+                          )}
+
+                          {/* 2. Creek Flow */}
+                          {activeSounds.includes('pnw_creek') && isPlaying && (
+                            <div className="pnw-creek-layer">
+                              <span className="pnw-creek-shimmer" />
+                            </div>
+                          )}
+
+                          {/* 3. Cedar Drips */}
+                          {activeSounds.includes('pnw_drips') && isPlaying && (
+                            <div className="pnw-drips-layer">
+                              <span className="pnw-drip-point dp1" />
+                              <span className="pnw-drip-point dp2" />
+                            </div>
+                          )}
+
+                          {/* 4. Coastal Breeze */}
+                          {activeSounds.includes('pnw_breeze') && isPlaying && (
+                            <div className="pnw-breeze-layer">
+                              <div className="pnw-breeze-sweep" />
+                            </div>
+                          )}
+
+                          {/* 5. Ocean Swell (breath background) */}
+                          {activeSounds.includes('pnw_swell') && isPlaying && (
+                            <div className="pnw-ocean-layer" />
+                          )}
+
+                          {/* 6. Tree Frogs */}
+                          {activeSounds.includes('pnw_frogs') && isPlaying && (
+                            <div className="pnw-frogs-layer">
+                              <span className="pnw-frog-glow fg1" />
+                              <span className="pnw-frog-glow fg2" />
+                            </div>
+                          )}
+
+                          {/* 7. Songbirds */}
+                          {activeSounds.includes('pnw_birds') && isPlaying && (
+                            <div className="pnw-birds-layer">
+                              <div className="pnw-bird-glide" />
+                            </div>
+                          )}
+
+                          {/* 8. Fog Horn Echo */}
+                          {activeSounds.includes('pnw_foghorn') && isPlaying && (
+                            <div className="pnw-foghorn-layer">
+                              <div className="pnw-horn-swell" />
+                            </div>
+                          )}
+                        </div>
                       )}
                       
                       <div className="phone-ui-header">
@@ -3035,7 +3684,11 @@ function App() {
 
                       <div className="phone-ui-artwork-frame">
                         <img
-                          src={DESTINATIONS[activeDestination].image}
+                          src={
+                            (isNight && DESTINATIONS[activeDestination].imageNight)
+                              ? DESTINATIONS[activeDestination].imageNight
+                              : DESTINATIONS[activeDestination].image
+                          }
                           alt={DESTINATIONS[activeDestination].title}
                           className="phone-ui-artwork"
                           style={{ transform: isPlaying ? 'scale(1.05)' : 'scale(1)' }}
@@ -3410,7 +4063,11 @@ function App() {
                 className="place-card"
                 onClick={() => selectDestination(index, true)}
               >
-                <img src={place.image} alt={place.title} className="place-card-image" />
+                <img 
+                  src={(isNight && place.imageNight) ? place.imageNight : place.image} 
+                  alt={place.title} 
+                  className="place-card-image" 
+                />
                 <div className="place-card-overlay">
                   <div className="place-meta">
                     <span className="place-location">{place.location}</span>
