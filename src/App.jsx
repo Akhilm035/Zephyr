@@ -2681,8 +2681,8 @@ const DESTINATIONS = [
     image: '/costa_rica_ancient_forest_night.jpg',
     imageNight: '/costa_rica_ancient_forest_night.jpg',
     weather: 'Warm Rain 24°C',
-    accentColor: '#4ade80', // Emerald Leaf Green
-    glowColor: 'rgba(74, 222, 128, 0.5)',
+    accentColor: '#34d399', // Mint Emerald
+    glowColor: 'rgba(52, 211, 153, 0.45)',
     sounds: ['Rainforest Stream', 'Leaves & Rain Drips', 'Toucan', 'Glass Frog Chorus', 'Tree Frog Calls', 'Canopy Breeze', 'Creek Splashes', 'Distant Howler', 'Longing by Aurdos'],
     volPreset: {
       rainforest_stream: 40,
@@ -2701,10 +2701,11 @@ const DESTINATIONS = [
     title: 'Celestial Dunes',
     location: 'Dubai Sand Dunes',
     description: 'Breathe in the cool desert air as the dry wind whispers over shifting sands under a dome of stars.',
-    image: '/celestial_desert.png',
+    image: '/celestial_desert_night.jpg',
+    imageNight: '/celestial_desert_night.jpg',
     weather: 'Clear Sky 18°C',
-    accentColor: '#fbbf24', // Warm Sand Gold
-    glowColor: 'rgba(251, 191, 36, 0.55)',
+    accentColor: '#fcd34d', // Celestial Sand Gold
+    glowColor: 'rgba(252, 211, 77, 0.45)',
     sounds: ['Desert Wind', 'Sand Whisper', 'Oasis Water Ripples', 'Campfire Glow', 'Tent Flutter', 'Desert Night Insects', 'Ney Flute Echo', 'Camel Bells', 'Leben by Dieter Huber'],
     volPreset: {
       dunes_wind: 40,
@@ -2723,10 +2724,11 @@ const DESTINATIONS = [
     title: 'Alpine Peaks',
     location: 'Mountain Valley',
     description: 'Sit beside a roaring glacier stream as gusty mountain winds brush past the snowy heights.',
-    image: '/alpine_peaks.png',
+    image: '/alpine_peaks_night.jpg',
+    imageNight: '/alpine_peaks_night.jpg',
     weather: 'Chilly Breeze -2°C',
-    accentColor: '#60a5fa', // Glacial Ice Blue
-    glowColor: 'rgba(96, 165, 250, 0.5)',
+    accentColor: '#38bdf8', // Glacial Sky Blue
+    glowColor: 'rgba(56, 189, 248, 0.45)',
     sounds: ['Mountain Stream', 'Alpine Breeze', 'Pine Rustle', 'Creek Pebbles', 'Distant Waterfall', 'Meadow Grass', 'Soft Songbirds', 'Aeolian Harp Echo', 'Windstorm by Erik Reno'],
     volPreset: {
       mountain_stream: 40,
@@ -2745,11 +2747,11 @@ const DESTINATIONS = [
     title: 'Misty Coastline',
     location: 'Pacific Northwest',
     description: 'An ancient cedar and Douglas fir forest overlooking a misty coastline. Gentle forest rain falls through towers of evergreens as the ocean waves swell in the distance.',
-    image: '/pacific_northwest_day.jpg',
+    image: '/pacific_northwest_night.jpg',
     imageNight: '/pacific_northwest_night.jpg',
     weather: 'Misty Rain 12°C',
-    accentColor: '#0ea5e9', // Coastal Blue/Cyan
-    glowColor: 'rgba(14, 165, 233, 0.5)',
+    accentColor: '#2dd4bf', // Coastal Mint Teal
+    glowColor: 'rgba(45, 212, 191, 0.45)',
     sounds: ['Forest Rain', 'Creek Flow', 'Cedar Drips', 'Coastal Breeze', 'Ocean Swell', 'Tree Frogs', 'Songbirds', 'Fog Horn Echo', 'Photograph by Noham St Pierre'],
     volPreset: {
       pnw_rain: 35,
@@ -2768,7 +2770,8 @@ const DESTINATIONS = [
     title: 'Deep Ocean',
     location: 'Polynesian Coast',
     description: 'Relax to the slow, heavy rise and fall of giant Pacific waves breaking on a warm sandy shore.',
-    image: '/hero_background.png',
+    image: '/polynesian_coast.jpg',
+    imageNight: '/polynesian_coast.jpg',
     weather: 'Tropical Breeze 26°C',
     accentColor: '#38bdf8', // Pacific Marine Cyan
     glowColor: 'rgba(56, 189, 248, 0.5)',
@@ -2780,7 +2783,8 @@ const DESTINATIONS = [
     title: 'Japanese Garden',
     location: 'Kyoto Sanctuary',
     description: 'Sip tea near a trickling bamboo fountain while cherry blossom petals fall silently into the pond.',
-    image: '/study_sessions.png',
+    image: '/kyoto_sanctuary.jpg',
+    imageNight: '/kyoto_sanctuary.jpg',
     weather: 'Mist Fog 16°C',
     accentColor: '#f472b6', // Sakura Violet Pink
     glowColor: 'rgba(244, 114, 182, 0.5)',
