@@ -2014,6 +2014,8 @@ body {
   text-align: left;
   transition: var(--transition-medium);
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  width: 215px;
+  justify-content: center;
 }
 
 .store-badge-premium:hover {
@@ -2032,11 +2034,13 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--c-text-muted);
+  white-space: nowrap;
 }
 
 .badge-title {
   font-size: 1rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .download-right-visual {
@@ -3213,7 +3217,7 @@ body {
   #destinations .section-header,
   #testimonials .section-header,
   main .section .section-header {
-    margin-bottom: 0 !important;
+    margin-bottom: 2.2rem !important;
     padding-bottom: 0 !important;
     margin-top: 0 !important;
   }

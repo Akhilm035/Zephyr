@@ -4936,63 +4936,67 @@ function App() {
           )}
         </section>
 
-        {/* 6. Explore Beautiful Places (Destination Cards) */}
-        <section className="section" id="destinations">
-          <div className="section-header" style={{ textAlign: 'left', maxWidth: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '2rem' }}>
-            <div>
-              <span className="section-tag">Handcrafted Worlds</span>
-              <h2 className="section-title" style={{ marginBottom: 0 }}>Explore beautiful places.</h2>
+        {!isMobile && (
+          <section className="section" id="destinations">
+            <div className="section-header" style={{ textAlign: 'left', maxWidth: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '2rem' }}>
+              <div>
+                <span className="section-tag">Handcrafted Worlds</span>
+                <h2 className="section-title" style={{ marginBottom: 0 }}>Explore beautiful places.</h2>
+              </div>
+              <p className="section-desc" style={{ maxWidth: '580px', margin: 0 }}>
+                Travel around the world without leaving bed. Select a location to instantly import its unique meteorological soundscape.
+              </p>
             </div>
-            <p className="section-desc" style={{ maxWidth: '580px', margin: 0 }}>
-              Travel around the world without leaving bed. Select a location to instantly import its unique meteorological soundscape.
-            </p>
-          </div>
 
-          <div className="places-scroll-container">
-            {DESTINATIONS.map((place, index) => (
-              <div
-                key={place.id}
-                className="place-card"
-                onClick={() => selectDestination(index, true)}
-              >
-                <img 
-                  src={(isNight && place.imageNight) ? place.imageNight : place.image} 
-                  alt={place.title} 
-                  className="place-card-image" 
-                />
-                <div className="place-card-overlay">
-                  <div className="place-meta">
-                    <span className="place-location">{place.location}</span>
-                    <span className="place-weather">
-                      <Sun size={14} />
-                      <span>{place.weather}</span>
-                    </span>
-                  </div>
-                  <h3 className="place-title">{place.title}</h3>
-                  <p className="place-description">{place.description}</p>
-                  
-                  <div className="place-sounds">
-                    {place.sounds.map((snd, idx) => (
-                      <span key={idx} className="place-sound-tag">
-                        {snd}
+            <div className="places-scroll-container">
+              {DESTINATIONS.map((place, index) => (
+                <div
+                  key={place.id}
+                  className="place-card"
+                  onClick={() => selectDestination(index, true)}
+                >
+                  <img 
+                    src={(isNight && place.imageNight) ? place.imageNight : place.image} 
+                    alt={place.title} 
+                    className="place-card-image" 
+                    />
+                  <div className="place-card-overlay">
+                    <div className="place-meta">
+                      <span className="place-location">{place.location}</span>
+                      <span className="place-weather">
+                        <Sun size={14} />
+                        <span>{place.weather}</span>
                       </span>
-                    ))}
+                    </div>
+                    <h3 className="place-title">{place.title}</h3>
+                    <p className="place-description">{place.description}</p>
+                    
+                    <div className="place-sounds">
+                      {place.sounds.map((snd, idx) => (
+                        <span key={idx} className="place-sound-tag">
+                          {snd}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* 7. Create Your Own Mix (Connected lines visual) */}
         <section className="section">
+          <div className="section-header">
+            <span className="section-tag">Infinite Mixes</span>
+            <h2 className="section-title">Create your own atmospheric playlist.</h2>
+            <p className="section-desc">
+              Layer individual sound nodes together, save them as custom names (e.g. "My Rain Cabin Study"), and schedule automatic sleep timers.
+            </p>
+          </div>
+
           <div className="mix-section-wrapper">
             <div className="mix-content">
-              <span className="section-tag">Infinite Mixes</span>
-              <h2 className="section-title">Create your own atmospheric playlist.</h2>
-              <p className="section-desc" style={{ marginBottom: '2rem' }}>
-                Layer individual sound nodes together, save them as custom names (e.g. "My Rain Cabin Study"), and schedule automatic sleep timers.
-              </p>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <li style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                   <CheckCircle size={18} style={{ color: 'var(--c-lavender-bright)', flexShrink: 0 }} />
@@ -5142,7 +5146,7 @@ function App() {
                 "I suffer from insomnia and this app has been a miracle. Building a lofi-acoustic guitar and fireplace combination knocks me out within 10 minutes."
               </p>
               <div className="author-block">
-                <div className="author-avatar" style={{ background: 'linear-gradient(135deg, var(--c-sunset) 0%, var(--c-lavender-bright) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>JD</div>
+                <img src="/julian_avatar.png" alt="Julian DeVries" className="author-avatar" />
                 <div>
                   <h4 className="author-name">Julian DeVries</h4>
                   <span className="author-role">Software Architect</span>
@@ -5160,7 +5164,7 @@ function App() {
                 "During remote reading, the brown noise combined with soft rain drowns out the street noise perfectly. It helps me read books for hours."
               </p>
               <div className="author-block">
-                <div className="author-avatar" style={{ background: 'linear-gradient(135deg, var(--c-indigo) 0%, var(--c-lavender-bright) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>SC</div>
+                <img src="/sarah_avatar.png" alt="Sarah Chen" className="author-avatar" />
                 <div>
                   <h4 className="author-name">Sarah Chen</h4>
                   <span className="author-role">Graduate Student</span>
@@ -5178,7 +5182,7 @@ function App() {
           <div className="download-container">
             <div className="download-content">
               <span className="section-tag" style={{ color: 'var(--c-sunset)' }}>Get Zephyr</span>
-              <h2 className="download-title">Your peaceful escape is one tap away.</h2>
+              <h2 className="download-title">Relax with one tap.</h2>
               <p className="download-desc">
                 Reclaim calm spaces, enhance focus, and drift into deep sleep. Zephyr is free to try with no registration required.
               </p>
