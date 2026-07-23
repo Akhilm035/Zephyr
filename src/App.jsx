@@ -1859,6 +1859,617 @@ class AmbientSynthEngine {
       };
       playLoop();
     }
+    else if (soundId === 'ocean_swell') {
+      // Extremely low, powerful Pacific swell waves
+      const bufferSize = 4 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 160;
+
+      // 0.05 Hz swell sweep (20 seconds cycle)
+      const swellLFO = this.ctx.createOscillator();
+      swellLFO.frequency.value = 0.05;
+      
+      const swellGain = this.ctx.createGain();
+      swellGain.gain.value = 90;
+
+      swellLFO.connect(swellGain);
+      swellGain.connect(filter.frequency);
+
+      noise.connect(filter);
+      filter.connect(gainNode);
+      
+      swellLFO.start();
+      noise.start();
+      sourceNodes.push(noise, swellLFO);
+    }
+    else if (soundId === 'gentle_reef') {
+      // Soft wave wash over volcanic rocks/reefs (slightly brighter lowpass noise sweep)
+      const bufferSize = 3 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 350;
+
+      // 0.12 Hz LFO cycle
+      const washLFO = this.ctx.createOscillator();
+      washLFO.frequency.value = 0.12;
+      
+      const washGain = this.ctx.createGain();
+      washGain.gain.value = 140;
+
+      washLFO.connect(washGain);
+      washGain.connect(filter.frequency);
+
+      noise.connect(filter);
+      filter.connect(gainNode);
+      
+      washLFO.start();
+      noise.start();
+      sourceNodes.push(noise, washLFO);
+    }
+    else if (soundId === 'trade_wind') {
+      // Warm, steady breeze sweep across the coast
+      const bufferSize = 2.5 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 300;
+
+      // LFO for gentle gusts
+      const breezeLFO = this.ctx.createOscillator();
+      breezeLFO.frequency.value = 0.08;
+      
+      const breezeGain = this.ctx.createGain();
+      breezeGain.gain.value = 110;
+
+      breezeLFO.connect(breezeGain);
+      breezeGain.connect(filter.frequency);
+
+      noise.connect(filter);
+      filter.connect(gainNode);
+      
+      breezeLFO.start();
+      noise.start();
+      sourceNodes.push(noise, breezeLFO);
+    }
+    else if (soundId === 'palm_rustle') {
+      // Periodic rustling sound of palm leaves
+      const playRustle = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        
+        // High frequency noise burst
+        const bufferSize = 1.2 * this.ctx.sampleRate;
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = noiseBuffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1400, now);
+        filter.Q.value = 2.0;
+
+        // Modulate with small fast fluctuations
+        const mod = this.ctx.createOscillator();
+        mod.frequency.value = 8; // 8Hz flutter
+        const modGain = this.ctx.createGain();
+        modGain.gain.value = 300;
+        mod.connect(modGain);
+        modGain.connect(filter.frequency);
+
+        const rGain = this.ctx.createGain();
+        rGain.gain.setValueAtTime(0, now);
+        rGain.gain.linearRampToValueAtTime(0.12, now + 0.15);
+        rGain.gain.exponentialRampToValueAtTime(0.001, now + 1.15);
+
+        noise.connect(filter);
+        filter.connect(rGain);
+        rGain.connect(gainNode);
+
+        mod.start(now);
+        noise.start(now);
+        mod.stop(now + 1.2);
+        noise.stop(now + 1.2);
+
+        const nextTime = 4000 + Math.random() * 6000;
+        this.palmRustleTimeout = setTimeout(playRustle, nextTime);
+      };
+      playRustle();
+    }
+    else if (soundId === 'lagoon_ripples') {
+      // Rhythmic gentle splash/ripple sound (small high pitch drops)
+      const playRipples = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const count = 2 + Math.floor(Math.random() * 3);
+
+        for (let i = 0; i < count; i++) {
+          const t = now + i * 0.16;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          
+          const pitch = 700 + Math.random() * 300;
+          osc.frequency.setValueAtTime(pitch, t);
+          osc.frequency.exponentialRampToValueAtTime(pitch * 0.6, t + 0.12);
+
+          const wGain = this.ctx.createGain();
+          wGain.gain.setValueAtTime(0, t);
+          wGain.gain.linearRampToValueAtTime(0.08, t + 0.005);
+          wGain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+
+          osc.connect(wGain);
+          wGain.connect(gainNode);
+          osc.start(t);
+          osc.stop(t + 0.16);
+        }
+
+        const nextTime = 2500 + Math.random() * 3500;
+        this.lagoonRipplesTimeout = setTimeout(playRipples, nextTime);
+      };
+      playRipples();
+    }
+    else if (soundId === 'night_crickets') {
+      // Constant high frequency chirpy cricket pulses
+      const playCrickets = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const pulseCount = 3 + Math.floor(Math.random() * 2);
+        
+        for (let i = 0; i < pulseCount; i++) {
+          const t = now + i * 0.07;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(3900 + Math.random() * 100, t);
+
+          const cGain = this.ctx.createGain();
+          cGain.gain.setValueAtTime(0, t);
+          cGain.gain.linearRampToValueAtTime(0.03, t + 0.002);
+          cGain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+
+          osc.connect(cGain);
+          cGain.connect(gainNode);
+          osc.start(t);
+          osc.stop(t + 0.06);
+        }
+
+        const nextTime = 1200 + Math.random() * 800;
+        this.nightCricketsTimeout = setTimeout(playCrickets, nextTime);
+      };
+      playCrickets();
+    }
+    else if (soundId === 'poly_frogs') {
+      // Polynesian tropical tree frog chorusing
+      const playFrogs = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const chirpCount = 3 + Math.floor(Math.random() * 3);
+        const pitch = 1450 + Math.random() * 150;
+
+        for (let i = 0; i < chirpCount; i++) {
+          const t = now + i * 0.18;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(pitch, t);
+          osc.frequency.exponentialRampToValueAtTime(pitch * 0.82, t + 0.09);
+
+          const fGain = this.ctx.createGain();
+          fGain.gain.setValueAtTime(0, t);
+          fGain.gain.linearRampToValueAtTime(0.1, t + 0.005);
+          fGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+
+          osc.connect(fGain);
+          fGain.connect(gainNode);
+          osc.start(t);
+          osc.stop(t + 0.12);
+        }
+
+        const nextTime = 5000 + Math.random() * 6000;
+        this.polyFrogsTimeout = setTimeout(playFrogs, nextTime);
+      };
+      playFrogs();
+    }
+    else if (soundId === 'distant_seabirds') {
+      // Occasional gliding bird cry
+      const playSeabirds = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        const startPitch = 1900 + Math.random() * 300;
+        osc.frequency.setValueAtTime(startPitch, now);
+        osc.frequency.exponentialRampToValueAtTime(startPitch * 1.25, now + 0.25);
+        osc.frequency.exponentialRampToValueAtTime(startPitch * 0.75, now + 0.85);
+
+        const bGain = this.ctx.createGain();
+        bGain.gain.setValueAtTime(0, now);
+        bGain.gain.linearRampToValueAtTime(0.035, now + 0.15);
+        bGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+        osc.connect(bGain);
+        bGain.connect(gainNode);
+        
+        osc.start(now);
+        osc.stop(now + 1.25);
+
+        const nextTime = 15000 + Math.random() * 15000;
+        this.distantSeabirdsTimeout = setTimeout(playSeabirds, nextTime);
+      };
+      playSeabirds();
+    }
+    else if (soundId === 'relaxing_ambience_soothing_sounds') {
+      // Relaxing Ambience Soothing Sounds: slow, lush major 7th and 9th chords wash
+      const playMelody = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        
+        // Ethereal chord loop (Gmaj9 -> Cadd9 -> Bm7 -> Am9)
+        const chords = [
+          [98.00,  146.83, 196.00, 246.94, 293.66, 392.00], // Gmaj9
+          [130.81, 164.81, 196.00, 261.63, 329.63, 523.25], // Cadd9
+          [123.47, 146.83, 196.00, 246.94, 293.66, 493.88], // Bm7
+          [110.00, 130.81, 196.00, 220.00, 329.63, 440.00]  // Am9
+        ];
+
+        const chordIdx = Math.floor(now / 9.0) % chords.length;
+        const activeChord = chords[chordIdx];
+
+        activeChord.forEach((freq, idx) => {
+          const t = now + idx * 0.25; // soft staggered entry
+
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, t);
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(320, t); // warm, rounded filter sweeps
+
+          const padGain = this.ctx.createGain();
+          padGain.gain.setValueAtTime(0, t);
+          padGain.gain.linearRampToValueAtTime(0.18, t + 1.2); // slow, soothing fade in
+          padGain.gain.exponentialRampToValueAtTime(0.001, t + 6.8); // slow, soothing decay
+
+          // Spacious stereo delay lines
+          const delayNode = this.ctx.createDelay(6.0);
+          delayNode.delayTime.setValueAtTime(2.2, t);
+          const delayGain = this.ctx.createGain();
+          delayGain.gain.setValueAtTime(0.32, t);
+
+          osc.connect(filter);
+          filter.connect(padGain);
+          padGain.connect(gainNode);
+
+          padGain.connect(delayNode);
+          delayNode.connect(delayGain);
+          delayGain.connect(gainNode);
+          delayGain.connect(delayNode); // feedback loop
+
+          osc.start(t);
+          osc.stop(t + 7.5);
+        });
+
+        this.relaxingAmbienceTimeout = setTimeout(playMelody, 9000);
+      };
+      playMelody();
+    }
+    else if (soundId === 'garden_stream') {
+      // Constant garden stream flow over smooth rocks
+      const bufferSize = 2.8 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 280;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.22; // 0.22 Hz ripples
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 65;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+
+      noise.connect(filter);
+      filter.connect(gainNode);
+
+      lfo.start();
+      noise.start();
+      sourceNodes.push(noise, lfo);
+    }
+    else if (soundId === 'bamboo_rustle') {
+      // Gentle wind whispering through tall bamboo stalks
+      const bufferSize = 3 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 950;
+      filter.Q.value = 1.8;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.06; // extremely slow breeze
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 220;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+
+      noise.connect(filter);
+      filter.connect(gainNode);
+
+      lfo.start();
+      noise.start();
+      sourceNodes.push(noise, lfo);
+    }
+    else if (soundId === 'tsukubai_drips') {
+      // Slow, irregular droplets falling into a traditional stone water basin
+      const playDrips = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        const pitch = 720 + Math.random() * 80;
+        osc.frequency.setValueAtTime(pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(pitch * 0.7, now + 0.15);
+
+        const dGain = this.ctx.createGain();
+        dGain.gain.setValueAtTime(0, now);
+        dGain.gain.linearRampToValueAtTime(0.12, now + 0.005);
+        dGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+        osc.connect(dGain);
+        dGain.connect(gainNode);
+        osc.start(now);
+        osc.stop(now + 0.2);
+
+        // Irregular interval: 2.2 to 5.4 seconds
+        const nextTime = 2200 + Math.random() * 3200;
+        this.tsukubaiTimeout = setTimeout(playDrips, nextTime);
+      };
+      playDrips();
+    }
+    else if (soundId === 'maple_rustle') {
+      // Gentle movement of maple and pine trees in a cool night breeze
+      const bufferSize = 2.2 * this.ctx.sampleRate;
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1600;
+      filter.Q.value = 1.0;
+
+      const lfo = this.ctx.createOscillator();
+      lfo.frequency.value = 0.18; 
+      const lfoGain = this.ctx.createGain();
+      lfoGain.gain.value = 350;
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+
+      noise.connect(filter);
+      filter.connect(gainNode);
+
+      lfo.start();
+      noise.start();
+      sourceNodes.push(noise, lfo);
+    }
+    else if (soundId === 'zen_crickets') {
+      // Subtle Japanese insect chorus forming the ambient foundation
+      const playCrickets = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const count = 4 + Math.floor(Math.random() * 2);
+
+        for (let i = 0; i < count; i++) {
+          const t = now + i * 0.06;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(4200 + Math.random() * 80, t);
+
+          const cGain = this.ctx.createGain();
+          cGain.gain.setValueAtTime(0, t);
+          cGain.gain.linearRampToValueAtTime(0.02, t + 0.002);
+          cGain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+
+          osc.connect(cGain);
+          cGain.connect(gainNode);
+          osc.start(t);
+          osc.stop(t + 0.05);
+        }
+
+        const nextTime = 1400 + Math.random() * 900;
+        this.zenCricketsTimeout = setTimeout(playCrickets, nextTime);
+      };
+      playCrickets();
+    }
+    else if (soundId === 'zen_frogs') {
+      // Sparse frog calls from a distant pond, placed deep in the stereo field
+      const playFrogs = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        const count = 2 + Math.floor(Math.random() * 3);
+        const pitch = 1350 + Math.random() * 120;
+
+        for (let i = 0; i < count; i++) {
+          const t = now + i * 0.22;
+          const osc = this.ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(pitch, t);
+          osc.frequency.exponentialRampToValueAtTime(pitch * 0.88, t + 0.08);
+
+          const fGain = this.ctx.createGain();
+          fGain.gain.setValueAtTime(0, t);
+          fGain.gain.linearRampToValueAtTime(0.06, t + 0.005);
+          fGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+          osc.connect(fGain);
+          fGain.connect(gainNode);
+          osc.start(t);
+          osc.stop(t + 0.11);
+        }
+
+        const nextTime = 7000 + Math.random() * 7000;
+        this.zenFrogsTimeout = setTimeout(playFrogs, nextTime);
+      };
+      playFrogs();
+    }
+    else if (soundId === 'temple_bell') {
+      // A deep, distant temple bell with a long natural decay, heard very occasionally
+      const playBell = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        
+        const frequencies = [90.0, 135.2, 180.5, 270.1];
+        frequencies.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+
+          const bellGain = this.ctx.createGain();
+          bellGain.gain.setValueAtTime(0, now);
+          bellGain.gain.linearRampToValueAtTime(idx === 0 ? 0.35 : 0.18, now + 0.05);
+          bellGain.gain.exponentialRampToValueAtTime(0.001, now + 8.5); // long resonance decay
+
+          osc.connect(bellGain);
+          bellGain.connect(gainNode);
+          osc.start(now);
+          osc.stop(now + 9.0);
+        });
+
+        // Trigger every 45 to 70 seconds to preserve the meditative atmosphere
+        const nextTime = 45000 + Math.random() * 25000;
+        this.templeBellTimeout = setTimeout(playBell, nextTime);
+      };
+      this.templeBellTimeout = setTimeout(playBell, 4000);
+    }
+    else if (soundId === 'furin_chime') {
+      // A delicate Japanese wind chime ringing softly and infrequently as the breeze passes
+      const playChime = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+
+        const frequencies = [2300.0, 3450.0, 4600.0];
+        frequencies.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+
+          const chimeGain = this.ctx.createGain();
+          chimeGain.gain.setValueAtTime(0, now);
+          chimeGain.gain.linearRampToValueAtTime(idx === 0 ? 0.08 : 0.03, now + 0.005);
+          chimeGain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+
+          osc.connect(chimeGain);
+          chimeGain.connect(gainNode);
+          osc.start(now);
+          osc.stop(now + 2.0);
+        });
+
+        const nextTime = 14000 + Math.random() * 14000;
+        this.furinChimeTimeout = setTimeout(playChime, nextTime);
+      };
+      this.furinChimeTimeout = setTimeout(playChime, 8000 + Math.random() * 8000);
+    }
+    else if (soundId === 'overseas_ngyn') {
+      // Overseas ngyn: slow, peaceful Japanese garden pentatonic lofi melody
+      const playMelody = () => {
+        if (!this.gains[soundId]) return;
+        const now = this.ctx.currentTime;
+        
+        // Meditative pentatonic sequence (C4 -> D4 -> F4 -> G4 -> A4 -> G4 -> F4 -> D4)
+        const notes = [261.63, 293.66, 349.23, 392.00, 440.00, 392.00, 349.23, 293.66];
+        const noteIdx = Math.floor(now / 4.0) % notes.length;
+        const freq = notes[noteIdx];
+
+        // Soft, gentle sine carriers for pluck feel
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(450, now);
+
+        const pluckGain = this.ctx.createGain();
+        pluckGain.gain.setValueAtTime(0, now);
+        pluckGain.gain.linearRampToValueAtTime(0.16, now + 0.15); // soft pluck attack
+        pluckGain.gain.exponentialRampToValueAtTime(0.001, now + 3.8); // long soothing decay
+
+        // Spacious feedback delay
+        const delayNode = this.ctx.createDelay(5.0);
+        delayNode.delayTime.setValueAtTime(1.5, now);
+        const delayGain = this.ctx.createGain();
+        delayGain.gain.setValueAtTime(0.35, now);
+
+        osc.connect(filter);
+        filter.connect(pluckGain);
+        pluckGain.connect(gainNode);
+
+        pluckGain.connect(delayNode);
+        delayNode.connect(delayGain);
+        delayGain.connect(gainNode);
+        delayGain.connect(delayNode); // feedback
+
+        osc.start(now);
+        osc.stop(now + 4.0);
+
+        this.overseasNgynTimeout = setTimeout(playMelody, 4000);
+      };
+      playMelody();
+    }
 
     this.sources[soundId] = sourceNodes;
   }
@@ -1897,6 +2508,22 @@ class AmbientSynthEngine {
     if (soundId === 'pnw_birds') clearTimeout(this.pnwBirdsTimeout);
     if (soundId === 'pnw_foghorn') clearTimeout(this.pnwFoghornTimeout);
     if (soundId === 'photograph_noham_st_pierre') clearTimeout(this.photographTimeout);
+
+    // Polynesian Coast sound timeouts
+    if (soundId === 'palm_rustle') clearTimeout(this.palmRustleTimeout);
+    if (soundId === 'lagoon_ripples') clearTimeout(this.lagoonRipplesTimeout);
+    if (soundId === 'night_crickets') clearTimeout(this.nightCricketsTimeout);
+    if (soundId === 'poly_frogs') clearTimeout(this.polyFrogsTimeout);
+    if (soundId === 'distant_seabirds') clearTimeout(this.distantSeabirdsTimeout);
+    if (soundId === 'relaxing_ambience_soothing_sounds') clearTimeout(this.relaxingAmbienceTimeout);
+
+    // Japanese Garden sound timeouts
+    if (soundId === 'tsukubai_drips') clearTimeout(this.tsukubaiTimeout);
+    if (soundId === 'zen_crickets') clearTimeout(this.zenCricketsTimeout);
+    if (soundId === 'zen_frogs') clearTimeout(this.zenFrogsTimeout);
+    if (soundId === 'temple_bell') clearTimeout(this.templeBellTimeout);
+    if (soundId === 'furin_chime') clearTimeout(this.furinChimeTimeout);
+    if (soundId === 'overseas_ngyn') clearTimeout(this.overseasNgynTimeout);
     
     if (soundId === 'thunder') clearTimeout(this.thunderTimeout);
     if (soundId === 'fire' || soundId === 'campfire') {
@@ -2589,17 +3216,13 @@ function MobileHeroView({
             <button 
               className={`mobile-main-play-btn ${isPlaying ? 'playing' : ''}`}
               onClick={togglePlayback}
-              style={
-                isPlaying
-                  ? {
-                      borderColor: dest.accentColor || 'rgba(255, 255, 255, 0.35)',
-                      boxShadow: `0 8px 32px rgba(0,0,0,0.3), 0 0 20px ${dest.glowColor || 'rgba(255,255,255,0.3)'}`
-                    }
-                  : undefined
-              }
+              style={{
+                '--btn-glow-color': dest.accentColor || 'rgba(255, 255, 255, 0.3)',
+                borderColor: isPlaying ? (dest.accentColor || 'rgba(255, 255, 255, 0.25)') : undefined
+              }}
               aria-label={isPlaying ? 'Pause ambient soundscape' : 'Play ambient soundscape'}
             >
-              {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />}
+              {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" style={{ marginLeft: '4px' }} />}
             </button>
           </div>
         </div>
@@ -2775,8 +3398,18 @@ const DESTINATIONS = [
     weather: 'Tropical Breeze 26°C',
     accentColor: '#38bdf8', // Pacific Marine Cyan
     glowColor: 'rgba(56, 189, 248, 0.5)',
-    sounds: ['Ocean Waves', 'Wind'],
-    volPreset: { ocean: 75, wind: 35 }
+    sounds: ['Deep Ocean Swell', 'Gentle Reef Wash', 'Trade Wind Breeze', 'Palm Frond Rustle', 'Coral Lagoon Ripples', 'Night Crickets', 'Tree Frog Chorus', 'Distant Seabirds', 'Relaxing Ambience Soothing Sounds'],
+    volPreset: {
+      ocean_swell: 45,
+      gentle_reef: 30,
+      trade_wind: 20,
+      palm_rustle: 15,
+      lagoon_ripples: 10,
+      night_crickets: 8,
+      poly_frogs: 5,
+      distant_seabirds: 4,
+      relaxing_ambience_soothing_sounds: 30
+    }
   },
   {
     id: 'zen',
@@ -2788,8 +3421,28 @@ const DESTINATIONS = [
     weather: 'Mist Fog 16°C',
     accentColor: '#f472b6', // Sakura Violet Pink
     glowColor: 'rgba(244, 114, 182, 0.5)',
-    sounds: ['Fountain', 'Soft Lofi', 'Birds'],
-    volPreset: { birds: 50, music: 60, rain: 15 }
+    sounds: [
+      'Bamboo Grove Rustle',
+      'Tsukubai Water Drips',
+      'Garden Stream Flow',
+      'Temple Bell Resonance',
+      'Night Crickets',
+      'Japanese Tree Frog Calls',
+      'Maple & Pine Leaf Rustle',
+      'Glass Fūrin Wind Chime',
+      'Overseas ngyn'
+    ],
+    volPreset: {
+      garden_stream: 65,
+      bamboo_rustle: 50,
+      tsukubai_drips: 25,
+      maple_rustle: 20,
+      zen_crickets: 12,
+      zen_frogs: 10,
+      temple_bell: 3,
+      furin_chime: 2,
+      overseas_ngyn: 35
+    }
   }
 ]
 
@@ -2912,22 +3565,30 @@ const getMixSounds = (activeDest) => {
       { id: 'photograph_noham_st_pierre', name: 'Photograph by Noham St Pierre', icon: Music, color: '#f472b6' }
     ];
   } else if (activeDest === 4) {
-    // Deep Ocean
+    // Deep Ocean (Polynesian Coast)
     return [
-      { id: 'ocean', name: 'Ocean Waves', icon: Droplet, color: '#38bdf8' },
-      { id: 'wind', name: 'Coastal Breeze', icon: Wind, color: '#cbd5e1' },
-      { id: 'rain', name: 'Sea Shower', icon: CloudRain, color: '#60a5fa' },
-      { id: 'music', name: 'Warm Chords', icon: Music, color: '#c084fc' },
-      { id: 'birds', name: 'Seagulls', icon: BirdIcon, color: '#4ade80' }
+      { id: 'ocean_swell', name: 'Deep Ocean Swell', icon: Activity, color: '#38bdf8' },
+      { id: 'gentle_reef', name: 'Gentle Reef Wash', icon: Droplet, color: '#0ea5e9' },
+      { id: 'trade_wind', name: 'Trade Wind Breeze', icon: Wind, color: '#cbd5e1' },
+      { id: 'palm_rustle', name: 'Palm Frond Rustle', icon: Layers, color: '#4ade80' },
+      { id: 'lagoon_ripples', name: 'Coral Lagoon Ripples', icon: Droplet, color: '#2dd4bf' },
+      { id: 'night_crickets', name: 'Night Crickets', icon: Sparkles, color: '#34d399' },
+      { id: 'poly_frogs', name: 'Tree Frog Chorus', icon: Volume2, color: '#22c55e' },
+      { id: 'distant_seabirds', name: 'Distant Seabirds', icon: BirdIcon, color: '#fbbf24' },
+      { id: 'relaxing_ambience_soothing_sounds', name: 'Relaxing Ambience Soothing Sounds', icon: Music, color: '#f472b6' }
     ];
   } else if (activeDest === 5) {
-    // Japanese Garden
+    // Japanese Garden (Kyoto Sanctuary)
     return [
-      { id: 'fountain', name: 'Bamboo Water', icon: Droplet, color: '#34d399' },
-      { id: 'birds', name: 'Garden Birds', icon: BirdIcon, color: '#4ade80' },
-      { id: 'music', name: 'Zen Lofi', icon: Music, color: '#c084fc' },
-      { id: 'rain', name: 'Mist Rain', icon: CloudRain, color: '#60a5fa' },
-      { id: 'wind', name: 'Zen Breeze', icon: Wind, color: '#cbd5e1' }
+      { id: 'garden_stream', name: 'Garden Stream Flow', icon: Droplet, color: '#38bdf8' },
+      { id: 'bamboo_rustle', name: 'Bamboo Grove Rustle', icon: Wind, color: '#4ade80' },
+      { id: 'tsukubai_drips', name: 'Tsukubai Water Drips', icon: CloudRain, color: '#60a5fa' },
+      { id: 'maple_rustle', name: 'Maple & Pine Leaf Rustle', icon: Layers, color: '#facc15' },
+      { id: 'zen_crickets', name: 'Night Crickets', icon: Sparkles, color: '#a7f3d0' },
+      { id: 'zen_frogs', name: 'Japanese Tree Frog Calls', icon: Volume2, color: '#22c55e' },
+      { id: 'temple_bell', name: 'Temple Bell Resonance', icon: Bell, color: '#fb7185' },
+      { id: 'furin_chime', name: 'Glass Fūrin Wind Chime', icon: Music, color: '#c084fc' },
+      { id: 'overseas_ngyn', name: 'Overseas ngyn', icon: Music, color: '#f472b6' }
     ];
   }
   return MIX_SOUNDS;
@@ -2973,7 +3634,7 @@ const PRESET_MIXES = [
   {
     id: 'ocean_breeze',
     name: 'Ocean Serenade',
-    sounds: { ocean: 80, wind: 35, music: 50 }
+    sounds: { ocean_swell: 75, gentle_reef: 45, trade_wind: 35, palm_rustle: 25 }
   }
 ]
 
@@ -3033,7 +3694,25 @@ function App() {
     ocean: 60,
     birds: 45,
     snow: 30,
-    music: 50
+    music: 50,
+    ocean_swell: 45,
+    gentle_reef: 30,
+    trade_wind: 20,
+    palm_rustle: 15,
+    lagoon_ripples: 10,
+    night_crickets: 8,
+    poly_frogs: 5,
+    distant_seabirds: 4,
+    relaxing_ambience_soothing_sounds: 30,
+    garden_stream: 65,
+    bamboo_rustle: 50,
+    tsukubai_drips: 25,
+    maple_rustle: 20,
+    zen_crickets: 12,
+    zen_frogs: 10,
+    temple_bell: 3,
+    furin_chime: 2,
+    overseas_ngyn: 35
   })
 
   // Selected Preset state
@@ -3286,6 +3965,10 @@ function App() {
       activeKeys = [primarySound, 'windstorm_erik_reno']
     } else if (index === 3) {
       activeKeys = [primarySound, 'photograph_noham_st_pierre']
+    } else if (index === 4) {
+      activeKeys = [primarySound, 'relaxing_ambience_soothing_sounds']
+    } else if (index === 5) {
+      activeKeys = [primarySound, 'overseas_ngyn']
     }
     setActiveSounds(activeKeys)
     setSoundVolumes((prev) => {

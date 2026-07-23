@@ -2462,17 +2462,17 @@ body {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: radial-gradient(circle at bottom, rgba(15, 10, 30, 0.6) 0%, rgba(3, 2, 5, 0.6) 100%);
+    background: radial-gradient(circle at bottom, rgba(15, 10, 30, 0.6) 0%, rgba(3, 2, 5, 0.2) 100%);
   }
 
   .mobile-hero-glow.dunes {
-    background: radial-gradient(circle at bottom, rgba(249, 115, 22, 0.18) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.6) 100%);
+    background: radial-gradient(circle at bottom, rgba(249, 115, 22, 0.18) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.2) 100%);
   }
   .mobile-hero-glow.forest {
-    background: radial-gradient(circle at bottom, rgba(34, 197, 94, 0.12) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.6) 100%);
+    background: radial-gradient(circle at bottom, rgba(34, 197, 94, 0.12) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.2) 100%);
   }
   .mobile-hero-glow.alpine {
-    background: radial-gradient(circle at bottom, rgba(192, 132, 252, 0.12) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.6) 100%);
+    background: radial-gradient(circle at bottom, rgba(192, 132, 252, 0.12) 0%, rgba(15, 10, 28, 0.5) 50%, rgba(3, 2, 5, 0.2) 100%);
   }
 
   /* Top Nav */
@@ -2713,13 +2713,13 @@ body {
 
   .timer-ring-bg {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.18);
-    stroke-width: 1.5;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 1;
   }
 
   .timer-ring-fill {
     fill: none;
-    stroke-width: 2.5;
+    stroke-width: 1.8;
     stroke-linecap: round;
     transition: stroke-dashoffset 0.3s ease;
   }
@@ -2728,27 +2728,44 @@ body {
     width: 76px;
     height: 76px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.14) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    background: rgba(255, 255, 255, 0.07) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     color: #ffffff !important;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 0 15px rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 0 12px rgba(255, 255, 255, 0.05) !important;
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease !important;
   }
 
+  .mobile-main-play-btn svg {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  }
+
   .mobile-main-play-btn:active {
-    transform: scale(0.92);
-    background: rgba(255, 255, 255, 0.25) !important;
+    transform: scale(0.94);
+    background: rgba(255, 255, 255, 0.16) !important;
   }
 
   .mobile-main-play-btn.playing {
-    background: rgba(255, 255, 255, 0.18) !important;
-    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    animation: play-pulse-glow 3.5s infinite ease-in-out;
+  }
+
+  @keyframes play-pulse-glow {
+    0% {
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 0 12px rgba(255, 255, 255, 0.05), 0 0 0 0px var(--btn-glow-color, rgba(255, 255, 255, 0.2));
+    }
+    50% {
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 0 12px rgba(255, 255, 255, 0.05), 0 0 14px 4px var(--btn-glow-color, rgba(255, 255, 255, 0.06));
+    }
+    100% {
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 0 12px rgba(255, 255, 255, 0.05), 0 0 0 0px var(--btn-glow-color, rgba(255, 255, 255, 0.2));
+    }
   }
 
   .mobile-active-track-name {
